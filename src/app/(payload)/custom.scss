@@ -1,0 +1,373 @@
+// Import shared design tokens from frontend
+:root {
+  // Perplexity brand colors for admin
+  --background: 39 4% 98%;
+  --foreground: 180 52% 6%;
+  --card: 39 4% 98%;
+  --card-foreground: 180 52% 6%;
+  --primary: 186 65% 31%;
+  --primary-foreground: 39 4% 98%;
+  --secondary: 201 13% 27%;
+  --secondary-foreground: 39 4% 98%;
+  --muted: 180 8% 92%;
+  --muted-foreground: 201 13% 40%;
+  --accent: 190 75% 47%;
+  --accent-foreground: 180 52% 6%;
+  --border: 180 8% 85%;
+  --input: 180 8% 85%;
+  --ring: 186 65% 31%;
+  --radius: 0.25rem;
+}
+
+[data-theme='dark'] {
+  --background: 180 52% 6%;
+  --foreground: 39 4% 98%;
+  --card: 191 23% 14%;
+  --card-foreground: 39 4% 98%;
+  --primary: 186 65% 31%;
+  --primary-foreground: 39 4% 98%;
+  --secondary: 201 13% 22%;
+  --secondary-foreground: 39 4% 98%;
+  --muted: 191 23% 19%;
+  --muted-foreground: 186 17% 75%;
+  --accent: 190 75% 47%;
+  --accent-foreground: 180 52% 6%;
+  --border: 191 23% 19%;
+  --input: 191 23% 19%;
+  --ring: 186 65% 31%;
+}
+
+// Apply Perplexity brand to admin panel
+.payload-admin {
+  // Typography - Space Grotesk font family
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  // Base styling
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  
+  // Navigation with Perplexity styling
+  .nav {
+    background-color: hsl(var(--card));
+    border-right: 1px solid hsl(var(--border));
+    
+    .nav__link {
+      color: hsl(var(--muted-foreground));
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      
+      &:hover {
+        background-color: hsl(var(--accent) / 0.1);
+        color: hsl(var(--accent-foreground));
+      }
+      
+      &.nav__link--active {
+        background-color: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+      }
+    }
+  }
+  
+  // Header with brand colors
+  .template-default__header {
+    background-color: hsl(var(--background));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  
+  // Forms with Perplexity styling
+  .field-type {
+    margin-bottom: 1.5rem;
+    
+    &--text input,
+    &--textarea textarea,
+    &--email input,
+    &--number input {
+      background-color: hsl(var(--input));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      color: hsl(var(--foreground));
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      padding: 0.5rem 0.75rem;
+      transition: all 0.2s ease;
+      
+      &:focus {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 2px;
+        border-color: transparent;
+      }
+      
+      &::placeholder {
+        color: hsl(var(--muted-foreground));
+      }
+    }
+    
+    // Select inputs with React Select styling
+    &--select .rs__control {
+      background-color: hsl(var(--input));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      
+      &:hover {
+        border-color: hsl(var(--border));
+      }
+      
+      &.rs__control--is-focused {
+        border-color: hsl(var(--ring));
+        box-shadow: 0 0 0 1px hsl(var(--ring));
+      }
+    }
+    
+    // Labels with proper typography
+    .field-label {
+      color: hsl(var(--foreground));
+      font-weight: 500;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    
+    // Field descriptions
+    .field-description {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    
+    // Error states
+    &.field--has-error {
+      input, textarea, .rs__control {
+        border-color: hsl(var(--destructive));
+      }
+    }
+  }
+  
+  // Buttons with Perplexity brand
+  .btn {
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    transition: all 0.2s ease;
+    padding: 0.5rem 1rem;
+    
+    &--style-primary {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border: none;
+      
+      &:hover {
+        background-color: hsl(var(--primary) / 0.9);
+      }
+      
+      &:focus {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 2px;
+      }
+    }
+    
+    &--style-secondary {
+      background-color: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+      border: 1px solid hsl(var(--border));
+      
+      &:hover {
+        background-color: hsl(var(--secondary) / 0.8);
+      }
+    }
+    
+    &--style-outline {
+      background-color: transparent;
+      color: hsl(var(--foreground));
+      border: 1px solid hsl(var(--border));
+      
+      &:hover {
+        background-color: hsl(var(--accent));
+        color: hsl(var(--accent-foreground));
+      }
+    }
+  }
+  
+  // Cards with consistent styling
+  .collection-list__wrap,
+  .edit-view__wrap {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+  
+  // Rich text editor
+  .rich-text-editor {
+    .rich-text__wrapper {
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background-color: hsl(var(--background));
+    }
+    
+    .rich-text__toolbar {
+      background-color: hsl(var(--muted));
+      border-bottom: 1px solid hsl(var(--border));
+    }
+  }
+  
+  // Tables
+  .table {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    overflow: hidden;
+    
+    th {
+      background-color: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+      border-bottom: 1px solid hsl(var(--border));
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 1rem;
+    }
+    
+    td {
+      border-bottom: 1px solid hsl(var(--border));
+      color: hsl(var(--card-foreground));
+      padding: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    tr:hover {
+      background-color: hsl(var(--muted) / 0.5);
+    }
+  }
+  
+  // Status indicators with brand colors
+  .status-indicator {
+    border-radius: calc(var(--radius) / 2);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &--published {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+    
+    &--draft {
+      background-color: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+    }
+  }
+  
+  // Dashboard customizations
+  .dashboard {
+    .dashboard__label {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+    }
+    
+    .dashboard__card {
+      background-color: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
+    }
+  }
+  
+  // Collection list styling
+  .collection-list {
+    .table {
+      th {
+        background-color: hsl(var(--muted));
+        color: hsl(var(--muted-foreground));
+      }
+      
+      td {
+        color: hsl(var(--foreground));
+      }
+      
+      tr:hover {
+        background-color: hsl(var(--muted) / 0.5);
+      }
+    }
+  }
+  
+  // Code blocks with monospace font
+  .code-block {
+    background-color: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    color: hsl(var(--muted-foreground));
+    font-family: 'Space Mono', monospace;
+    padding: 1rem;
+  }
+  
+  // Smooth theme transitions
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+// Dark mode specific adjustments
+[data-theme='dark'] .payload-admin {
+  // Enhanced contrast for dark mode
+  .nav {
+    background-color: hsl(var(--card));
+    
+    .nav__link--active {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+  }
+  
+  // Better visibility for form elements in dark mode
+  .field-type {
+    &--text input,
+    &--textarea textarea {
+      background-color: hsl(var(--input));
+      color: hsl(var(--foreground));
+    }
+  }
+  
+  // Enhanced shadows for dark mode
+  .dashboard__card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  }
+}
+
+// Custom admin bar styling to match theme
+.admin-bar {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  
+  .admin-bar__controls {
+    gap: 1rem;
+  }
+  
+  .admin-bar__button {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    
+    &:hover {
+      background-color: hsl(var(--primary) / 0.9);
+    }
+  }
+}

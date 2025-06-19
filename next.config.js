@@ -17,7 +17,11 @@ const nextConfig = {
           hostname: url.hostname,
           protocol: url.protocol.replace(':', ''),
         }
-      }),
+      }),            
+      {
+        hostname: 'localhost',
+        protocol: 'http',
+      },
     ],
   },
   reactStrictMode: true,
