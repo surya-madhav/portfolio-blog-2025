@@ -69,8 +69,11 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    projects: Project;
     media: Media;
     categories: Category;
+    technologies: Technology;
+    'project-categories': ProjectCategory;
     users: User;
     redirects: Redirect;
     forms: Form;
@@ -85,8 +88,11 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
+    'project-categories': ProjectCategoriesSelect<false> | ProjectCategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -729,6 +735,169 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  /**
+   * Project title displayed in listings and project page
+   */
+  title: string;
+  /**
+   * Brief project description for listings and meta description
+   */
+  description: string;
+  /**
+   * Current project status
+   */
+  projectStatus?: ('in-progress' | 'completed' | 'archived') | null;
+  /**
+   * Feature this project on homepage and top of listings
+   */
+  featured?: boolean | null;
+  /**
+   * Main project image displayed in listings and project header
+   */
+  heroImage?: (number | null) | Media;
+  /**
+   * YouTube video ID for project demo (overrides hero image)
+   */
+  heroVideo?: string | null;
+  links?: {
+    /**
+     * GitHub repository URL
+     */
+    github?: string | null;
+    /**
+     * Live demo/production URL
+     */
+    liveDemo?: string | null;
+    /**
+     * Documentation URL
+     */
+    documentation?: string | null;
+  };
+  /**
+   * Select technologies used in this project
+   */
+  technologies?: (number | Technology)[] | null;
+  /**
+   * Main technology/framework used (for filtering and display)
+   */
+  primaryTechnology?: (number | null) | Technology;
+  /**
+   * Project categories for organization
+   */
+  categories?: (number | ProjectCategory)[] | null;
+  /**
+   * Keywords for search and filtering
+   */
+  tags?: string[] | null;
+  /**
+   * Related projects to show in suggestions
+   */
+  relatedProjects?: (number | Project)[] | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  /**
+   * When project development started
+   */
+  startDate?: string | null;
+  /**
+   * When project was completed
+   */
+  completionDate?: string | null;
+  publishedAt?: string | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "technologies".
+ */
+export interface Technology {
+  id: number;
+  /**
+   * Technology name (e.g., React, Node.js, PostgreSQL)
+   */
+  name: string;
+  /**
+   * Brief description of the technology
+   */
+  description?: string | null;
+  /**
+   * Technology icon/logo (SVG preferred for best quality)
+   */
+  icon: number | Media;
+  /**
+   * Category for organizing technologies
+   */
+  category:
+    | 'frontend'
+    | 'backend'
+    | 'database'
+    | 'devops'
+    | 'mobile'
+    | 'desktop'
+    | 'cloud'
+    | 'ai-ml'
+    | 'testing'
+    | 'tools';
+  /**
+   * Official website URL
+   */
+  officialWebsite?: string | null;
+  /**
+   * Documentation URL
+   */
+  documentation?: string | null;
+  /**
+   * Brand color for UI theming (hex code, e.g., #61DAFB)
+   */
+  color?: string | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-categories".
+ */
+export interface ProjectCategory {
+  id: number;
+  /**
+   * Category name (e.g., Web Application, Mobile App, API)
+   */
+  name: string;
+  /**
+   * Brief description of the project category
+   */
+  description?: string | null;
+  /**
+   * Category color for UI (hex code, e.g., #3B82F6)
+   */
+  color?: string | null;
+  /**
+   * Category icon (optional)
+   */
+  icon?: (number | null) | Media;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -747,6 +916,10 @@ export interface Redirect {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'projects';
+          value: number | Project;
         } | null);
     url?: string | null;
   };
@@ -909,12 +1082,24 @@ export interface PayloadLockedDocument {
         value: number | Post;
       } | null)
     | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'technologies';
+        value: number | Technology;
+      } | null)
+    | ({
+        relationTo: 'project-categories';
+        value: number | ProjectCategory;
       } | null)
     | ({
         relationTo: 'users';
@@ -1150,6 +1335,45 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  projectStatus?: T;
+  featured?: T;
+  heroImage?: T;
+  heroVideo?: T;
+  links?:
+    | T
+    | {
+        github?: T;
+        liveDemo?: T;
+        documentation?: T;
+      };
+  technologies?: T;
+  primaryTechnology?: T;
+  categories?: T;
+  tags?: T;
+  relatedProjects?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  startDate?: T;
+  completionDate?: T;
+  publishedAt?: T;
+  slug?: T;
+  slugLock?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -1258,6 +1482,37 @@ export interface CategoriesSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "technologies_select".
+ */
+export interface TechnologiesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  icon?: T;
+  category?: T;
+  officialWebsite?: T;
+  documentation?: T;
+  color?: T;
+  slug?: T;
+  slugLock?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-categories_select".
+ */
+export interface ProjectCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  color?: T;
+  icon?: T;
+  slug?: T;
+  slugLock?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1652,6 +1907,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'projects';
+          value: number | Project;
         } | null);
     global?: string | null;
     user?: (number | null) | User;
