@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Laptop, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/hooks/use-theme"
 import { useEffect, useState } from "react"
 
 export function ThemeSwitcher() {
@@ -21,7 +21,11 @@ export function ThemeSwitcher() {
   }, [])
 
   if (!mounted) {
-    return null
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        <Sun size={16} className="text-muted-foreground" />
+      </Button>
+    )
   }
 
   const ICON_SIZE = 16
@@ -53,8 +57,8 @@ export function ThemeSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-content" align="start">
         <DropdownMenuRadioGroup
-          value={theme}
-          onValueChange={(e) => setTheme(e)}
+          value={theme || 'system'}
+          onValueChange={(value) => setTheme(value as any)}
         >
           <DropdownMenuRadioItem className="flex gap-2" value="light">
             <Sun size={ICON_SIZE} className="text-muted-foreground" />
