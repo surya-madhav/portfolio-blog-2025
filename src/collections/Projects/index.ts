@@ -7,6 +7,19 @@ import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidateProject } from './hooks/revalidateProject'
 
+// Import project-specific blocks
+import { ProjectHero } from '../../blocks/ProjectHero/config'
+import { TechnicalSpecs } from '../../blocks/TechnicalSpecs/config'
+import { Code } from '../../blocks/Code/config'
+import { MermaidDiagram } from '../../blocks/MermaidDiagram/config'
+import { MediaGallery } from '../../blocks/MediaGallery/config'
+import { ProjectMetrics } from '../../blocks/ProjectMetrics/config'
+import { ProjectArchive } from '../../blocks/ProjectArchive/config'
+// Import existing blocks
+import { CallToAction } from '../../blocks/CallToAction/config'
+import { Content } from '../../blocks/Content/config'
+import { MediaBlock } from '../../blocks/MediaBlock/config'
+
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -139,6 +152,31 @@ export const Projects: CollectionConfig<'projects'> = {
     {
       type: 'tabs',
       tabs: [
+        {
+          label: 'Content',
+          fields: [
+            {
+              name: 'layout',
+              type: 'blocks',
+              blocks: [
+                ProjectHero,
+                TechnicalSpecs,
+                Code,
+                MermaidDiagram,
+                MediaGallery,
+                ProjectMetrics,
+                ProjectArchive,
+                CallToAction,
+                Content,
+                MediaBlock,
+              ],
+              admin: {
+                initCollapsed: true,
+                description: 'Build your project page content using blocks',
+              },
+            },
+          ],
+        },
         {
           label: 'Technologies',
           fields: [

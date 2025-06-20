@@ -7,6 +7,14 @@ import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+// Import project-specific blocks
+import { ProjectHeroBlock } from '@/blocks/ProjectHero/Component'
+import { TechnicalSpecsBlock } from '@/blocks/TechnicalSpecs/Component'
+import { CodeBlock } from '@/blocks/Code/Component'
+import { MermaidDiagramBlock } from '@/blocks/MermaidDiagram/Component'
+import { MediaGalleryBlock } from '@/blocks/MediaGallery/Component'
+import { ProjectMetricsBlock } from '@/blocks/ProjectMetrics/Component'
+import { ProjectArchiveBlock } from '@/blocks/ProjectArchive/Component'
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -14,6 +22,14 @@ const blockComponents = {
   cta: CallToActionBlock,
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
+  // Project-specific blocks
+  projectHero: ProjectHeroBlock,
+  technicalSpecs: TechnicalSpecsBlock,
+  code: CodeBlock,
+  mermaidDiagram: MermaidDiagramBlock,
+  mediaGallery: MediaGalleryBlock,
+  projectMetrics: ProjectMetricsBlock,
+  projectArchive: ProjectArchiveBlock,
 }
 
 export const RenderBlocks: React.FC<{

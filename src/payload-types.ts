@@ -778,6 +778,23 @@ export interface Project {
     documentation?: string | null;
   };
   /**
+   * Build your project page content using blocks
+   */
+  layout?:
+    | (
+        | ProjectHeroBlock
+        | TechnicalSpecsBlock
+        | CodeBlock
+        | MermaidDiagramBlock
+        | MediaGalleryBlock
+        | ProjectMetricsBlock
+        | ProjectArchiveBlock
+        | CallToActionBlock
+        | ContentBlock
+        | MediaBlock
+      )[]
+    | null;
+  /**
    * Select technologies used in this project
    */
   technologies?: (number | Technology)[] | null;
@@ -819,6 +836,401 @@ export interface Project {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectHeroBlock".
+ */
+export interface ProjectHeroBlock {
+  /**
+   * Hero title (defaults to project title if not provided)
+   */
+  title: string;
+  /**
+   * Optional subtitle or tagline
+   */
+  subtitle?: string | null;
+  /**
+   * Optional background image (will overlay with hero content)
+   */
+  backgroundImage?: (number | null) | Media;
+  /**
+   * Key project statistics to highlight
+   */
+  stats?:
+    | {
+        /**
+         * Stat label (e.g., "Lines of Code", "Performance Score")
+         */
+        label: string;
+        /**
+         * Stat value (e.g., "10,000+", "95%", "< 2s")
+         */
+        value: string;
+        /**
+         * Optional icon for the stat
+         */
+        icon?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional rich text content for the hero section
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TechnicalSpecsBlock".
+ */
+export interface TechnicalSpecsBlock {
+  /**
+   * System architecture and design patterns
+   */
+  architecture?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * System and software requirements
+   */
+  requirements?:
+    | {
+        category?: ('system' | 'software' | 'hardware' | 'network' | 'security' | 'performance') | null;
+        requirement: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Deployment strategy and infrastructure
+   */
+  deployment?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Performance metrics and benchmarks
+   */
+  performance?: {
+    /**
+     * Page load time (e.g., "< 2s", "1.2s average")
+     */
+    loadTime?: string | null;
+    /**
+     * System throughput (e.g., "1000 req/s", "10k concurrent users")
+     */
+    throughput?: string | null;
+    /**
+     * Scalability metrics (e.g., "Auto-scaling to 100 instances")
+     */
+    scalability?: string | null;
+    /**
+     * Uptime/availability (e.g., "99.9%", "24/7")
+     */
+    uptime?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'technicalSpecs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CodeBlock".
+ */
+export interface CodeBlock {
+  language?:
+    | (
+        | 'typescript'
+        | 'javascript'
+        | 'python'
+        | 'java'
+        | 'cpp'
+        | 'csharp'
+        | 'go'
+        | 'rust'
+        | 'php'
+        | 'ruby'
+        | 'swift'
+        | 'kotlin'
+        | 'sql'
+        | 'html'
+        | 'css'
+        | 'scss'
+        | 'json'
+        | 'yaml'
+        | 'xml'
+        | 'markdown'
+        | 'bash'
+        | 'powershell'
+        | 'dockerfile'
+      )
+    | null;
+  /**
+   * Optional filename to display (e.g., "app.tsx", "config.json")
+   */
+  filename?: string | null;
+  code: string;
+  /**
+   * Comma-separated line numbers to highlight (e.g., "1,3,5-7")
+   */
+  highlightLines?: string | null;
+  /**
+   * Optional description or explanation of the code
+   */
+  description?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'code';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MermaidDiagramBlock".
+ */
+export interface MermaidDiagramBlock {
+  /**
+   * Type of Mermaid diagram to render
+   */
+  diagramType: 'flowchart' | 'sequence' | 'class' | 'state' | 'er' | 'gantt' | 'gitgraph' | 'journey' | 'pie';
+  /**
+   * Mermaid diagram syntax. Visit mermaid.js.org for documentation.
+   */
+  diagramCode: string;
+  /**
+   * Optional title/caption for the diagram
+   */
+  title?: string | null;
+  /**
+   * Optional explanation of the diagram
+   */
+  description?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mermaidDiagram';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaGalleryBlock".
+ */
+export interface MediaGalleryBlock {
+  /**
+   * Images to display in the gallery
+   */
+  media: {
+    image: number | Media;
+    /**
+     * Optional caption for the image
+     */
+    caption?: string | null;
+    /**
+     * Alt text for accessibility
+     */
+    alt: string;
+    id?: string | null;
+  }[];
+  /**
+   * How to display the images
+   */
+  layout?: ('grid' | 'carousel' | 'masonry') | null;
+  /**
+   * Number of columns for grid/masonry layout
+   */
+  columns?: ('2' | '3' | '4') | null;
+  /**
+   * Display image captions
+   */
+  showCaptions?: boolean | null;
+  /**
+   * Aspect ratio for grid images
+   */
+  aspectRatio?: ('auto' | '16-9' | '4-3' | '1-1' | '3-2') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaGallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectMetricsBlock".
+ */
+export interface ProjectMetricsBlock {
+  /**
+   * Key project metrics to display
+   */
+  metrics: {
+    /**
+     * Metric label (e.g., "Performance Score", "Bundle Size")
+     */
+    label: string;
+    /**
+     * Metric value (e.g., "95", "2.3MB", "< 1s")
+     */
+    value: string;
+    /**
+     * Unit or suffix (e.g., "%", "ms", "MB", "users")
+     */
+    unit?: string | null;
+    /**
+     * Optional description explaining the metric
+     */
+    description?: string | null;
+    /**
+     * Optional icon for the metric
+     */
+    icon?: (number | null) | Media;
+    /**
+     * Color theme for the metric
+     */
+    color?: ('blue' | 'green' | 'yellow' | 'red' | 'purple' | 'pink' | 'gray') | null;
+    id?: string | null;
+  }[];
+  /**
+   * How to display the metrics
+   */
+  layout?: ('cards' | 'list' | 'grid') | null;
+  /**
+   * Section title
+   */
+  title?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectMetrics';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectArchiveBlock".
+ */
+export interface ProjectArchiveBlock {
+  /**
+   * Optional introduction content above the project listing
+   */
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * How to populate the project archive
+   */
+  populateBy?: ('collection' | 'selection') | null;
+  relationTo?: 'projects' | null;
+  /**
+   * Filter projects by categories
+   */
+  categories?: (number | ProjectCategory)[] | null;
+  /**
+   * Filter projects by technologies
+   */
+  technologies?: (number | Technology)[] | null;
+  /**
+   * Filter projects by status
+   */
+  projectStatus?: ('all' | 'in-progress' | 'completed' | 'archived') | null;
+  /**
+   * Show only featured projects
+   */
+  featuredOnly?: boolean | null;
+  /**
+   * Maximum number of projects to display
+   */
+  limit?: number | null;
+  /**
+   * Select specific projects to display
+   */
+  selectedDocs?: (number | Project)[] | null;
+  /**
+   * How to display the projects
+   */
+  displayStyle?: ('grid' | 'list' | 'cards') | null;
+  /**
+   * Number of columns for grid/cards layout
+   */
+  columns?: ('2' | '3' | '4') | null;
+  /**
+   * Show filtering interface above the project archive
+   */
+  showFilters?: boolean | null;
+  /**
+   * Show pagination controls
+   */
+  showPagination?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectArchive';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-categories".
+ */
+export interface ProjectCategory {
+  id: number;
+  /**
+   * Category name (e.g., Web Application, Mobile App, API)
+   */
+  name: string;
+  /**
+   * Brief description of the project category
+   */
+  description?: string | null;
+  /**
+   * Category color for UI (hex code, e.g., #3B82F6)
+   */
+  color?: string | null;
+  /**
+   * Category icon (optional)
+   */
+  icon?: (number | null) | Media;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -864,33 +1276,6 @@ export interface Technology {
    * Brand color for UI theming (hex code, e.g., #61DAFB)
    */
   color?: string | null;
-  slug?: string | null;
-  slugLock?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "project-categories".
- */
-export interface ProjectCategory {
-  id: number;
-  /**
-   * Category name (e.g., Web Application, Mobile App, API)
-   */
-  name: string;
-  /**
-   * Brief description of the project category
-   */
-  description?: string | null;
-  /**
-   * Category color for UI (hex code, e.g., #3B82F6)
-   */
-  color?: string | null;
-  /**
-   * Category icon (optional)
-   */
-  icon?: (number | null) | Media;
   slug?: string | null;
   slugLock?: boolean | null;
   updatedAt: string;
@@ -953,10 +1338,15 @@ export interface Search {
   id: number;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'posts';
-    value: number | Post;
-  };
+  doc:
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      }
+    | {
+        relationTo: 'projects';
+        value: number | Project;
+      };
   slug?: string | null;
   meta?: {
     title?: string | null;
@@ -1351,6 +1741,20 @@ export interface ProjectsSelect<T extends boolean = true> {
         liveDemo?: T;
         documentation?: T;
       };
+  layout?:
+    | T
+    | {
+        projectHero?: T | ProjectHeroBlockSelect<T>;
+        technicalSpecs?: T | TechnicalSpecsBlockSelect<T>;
+        code?: T | CodeBlockSelect<T>;
+        mermaidDiagram?: T | MermaidDiagramBlockSelect<T>;
+        mediaGallery?: T | MediaGalleryBlockSelect<T>;
+        projectMetrics?: T | ProjectMetricsBlockSelect<T>;
+        projectArchive?: T | ProjectArchiveBlockSelect<T>;
+        cta?: T | CallToActionBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
+      };
   technologies?: T;
   primaryTechnology?: T;
   categories?: T;
@@ -1371,6 +1775,138 @@ export interface ProjectsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectHeroBlock_select".
+ */
+export interface ProjectHeroBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  backgroundImage?: T;
+  stats?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        icon?: T;
+        id?: T;
+      };
+  content?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TechnicalSpecsBlock_select".
+ */
+export interface TechnicalSpecsBlockSelect<T extends boolean = true> {
+  architecture?: T;
+  requirements?:
+    | T
+    | {
+        category?: T;
+        requirement?: T;
+        id?: T;
+      };
+  deployment?: T;
+  performance?:
+    | T
+    | {
+        loadTime?: T;
+        throughput?: T;
+        scalability?: T;
+        uptime?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CodeBlock_select".
+ */
+export interface CodeBlockSelect<T extends boolean = true> {
+  language?: T;
+  filename?: T;
+  code?: T;
+  highlightLines?: T;
+  description?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MermaidDiagramBlock_select".
+ */
+export interface MermaidDiagramBlockSelect<T extends boolean = true> {
+  diagramType?: T;
+  diagramCode?: T;
+  title?: T;
+  description?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaGalleryBlock_select".
+ */
+export interface MediaGalleryBlockSelect<T extends boolean = true> {
+  media?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        alt?: T;
+        id?: T;
+      };
+  layout?: T;
+  columns?: T;
+  showCaptions?: T;
+  aspectRatio?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectMetricsBlock_select".
+ */
+export interface ProjectMetricsBlockSelect<T extends boolean = true> {
+  metrics?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        unit?: T;
+        description?: T;
+        icon?: T;
+        color?: T;
+        id?: T;
+      };
+  layout?: T;
+  title?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectArchiveBlock_select".
+ */
+export interface ProjectArchiveBlockSelect<T extends boolean = true> {
+  introContent?: T;
+  populateBy?: T;
+  relationTo?: T;
+  categories?: T;
+  technologies?: T;
+  projectStatus?: T;
+  featuredOnly?: T;
+  limit?: T;
+  selectedDocs?: T;
+  displayStyle?: T;
+  columns?: T;
+  showFilters?: T;
+  showPagination?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1941,17 +2477,6 @@ export interface BannerBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'banner';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CodeBlock".
- */
-export interface CodeBlock {
-  language?: ('typescript' | 'javascript' | 'css') | null;
-  code: string;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'code';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
