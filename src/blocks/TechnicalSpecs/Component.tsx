@@ -1,5 +1,5 @@
 import React from 'react'
-import { RichText } from '@/components/RichText'
+import RichText from '@/components/RichText'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -42,14 +42,14 @@ const categoryLabels = {
   performance: 'Performance',
 }
 
-export const TechnicalSpecsBlock: React.FC<Props> = ({ 
-  className, 
-  architecture, 
-  requirements, 
-  deployment, 
-  performance 
+export const TechnicalSpecsBlock: React.FC<Props> = ({
+  className,
+  architecture,
+  requirements,
+  deployment,
+  performance,
 }) => {
-  const hasPerformanceMetrics = performance && Object.values(performance).some(value => value)
+  const hasPerformanceMetrics = performance && Object.values(performance).some((value) => value)
 
   return (
     <div className={['space-y-8', className].filter(Boolean).join(' ')}>
@@ -102,16 +102,20 @@ export const TechnicalSpecsBlock: React.FC<Props> = ({
           <CardContent>
             <div className="space-y-4">
               {Object.entries(
-                requirements.reduce((acc, req) => {
-                  if (!acc[req.category]) acc[req.category] = []
-                  acc[req.category].push(req)
-                  return acc
-                }, {} as Record<string, typeof requirements>)
+                requirements.reduce(
+                  (acc, req) => {
+                    const key = req.category
+                    if (!acc[key]) acc[key] = []
+                    acc[key]!.push(req)
+                    return acc
+                  },
+                  {} as Record<string, typeof requirements>,
+                ),
               ).map(([category, reqs]) => (
                 <div key={category}>
                   <div className="mb-3">
-                    <Badge 
-                      variant="secondary" 
+                    <Badge
+                      variant="secondary"
                       className={categoryColors[category as keyof typeof categoryColors]}
                     >
                       {categoryLabels[category as keyof typeof categoryLabels]}
@@ -175,9 +179,7 @@ export const TechnicalSpecsBlock: React.FC<Props> = ({
               )}
               {performance?.uptime && (
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-red-600 mb-1">
-                    {performance.uptime}
-                  </div>
+                  <div className="text-2xl font-bold text-red-600 mb-1">{performance.uptime}</div>
                   <div className="text-sm text-muted-foreground uppercase tracking-wide">
                     Uptime
                   </div>

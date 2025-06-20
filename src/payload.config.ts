@@ -38,6 +38,7 @@ export default buildConfig({
     },
     user: Users.slug,
     livePreview: {
+      collections: ['pages', 'posts', 'projects'],
       breakpoints: [
         {
           label: 'Mobile',
