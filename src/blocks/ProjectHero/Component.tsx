@@ -1,5 +1,5 @@
 import React from 'react'
-import { RichText } from '@/components/RichText'
+import RichText from '@/components/RichText'
 import { Media } from '@/components/Media'
 import type { Media as MediaType } from '@/payload-types'
 

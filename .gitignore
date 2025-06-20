@@ -40,3 +40,5 @@ tasks/
 .windsurfrules
 .roo/*
 .roomodes
+docs/data/
+docs/*

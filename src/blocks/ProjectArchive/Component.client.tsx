@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { RichText } from '@/components/RichText'
+import RichText from '@/components/RichText'
 import { TechnologyList } from '@/components/TechnologyBadge'
 import { Media } from '@/components/Media'
 import { Button } from '@/components/ui/button'
