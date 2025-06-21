@@ -38,7 +38,10 @@ export const ProjectCategories: CollectionConfig = {
       admin: {
         description: 'Category color for UI (hex code, e.g., #3B82F6)',
       },
-      validate: (val) => !val || /^#[0-9A-F]{6}$/i.test(val) || 'Must be a valid hex color code (e.g., #3B82F6)',
+      validate: (val: unknown) =>
+        !val ||
+        /^#[0-9A-F]{6}$/i.test(val as string) ||
+        'Must be a valid hex color code (e.g., #3B82F6)',
     },
     {
       name: 'icon',

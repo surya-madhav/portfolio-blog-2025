@@ -1,540 +1,872 @@
-# Frontend Architecture & Theming System
-
-This document provides a comprehensive guide to the frontend architecture, component system, and theming approach used in the Portfolio Blog 2025 project.
+# Frontend Architecture Documentation - Portfolio Blog 2025
 
 ## Table of Contents
+1. [Architecture Overview](#architecture-overview)
+2. [Component System](#component-system)
+3. [Content Blocks System](#content-blocks-system)
+4. [Page Architecture](#page-architecture)
+5. [Design System Implementation](#design-system-implementation)
+6. [State Management](#state-management)
+7. [Performance Patterns](#performance-patterns)
+8. [Development Guidelines](#development-guidelines)
 
-1. [Component Architecture](#component-architecture)
-2. [Theming System](#theming-system)
-3. [Design System](#design-system)
-4. [Component Patterns](#component-patterns)
-5. [State Management](#state-management)
-6. [Performance Patterns](#performance-patterns)
+## Architecture Overview
 
-## Component Architecture
+### Next.js App Router Structure
 
-### Directory Structure
-
+```mermaid
+graph TB
+    subgraph "App Router Structure"
+        Root[src/app/]
+        Frontend[/"(frontend)"/]
+        Payload[/"(payload)"/]
+    end
+    
+    subgraph "Frontend Routes"
+        Home["/page.tsx - Homepage"]
+        Slug["/[slug]/page.tsx - Dynamic Pages"]
+        Posts["/posts/ - Blog System"]
+        Projects["/projects/ - Portfolio System"]
+        Search["/search/ - Search Interface"]
+        Design["/design-system/ - Style Guide"]
+    end
+    
+    subgraph "Payload Admin Routes"
+        Admin["/admin/ - CMS Interface"]
+        API["/api/ - REST Endpoints"]
+        GraphQL["/api/graphql - GraphQL API"]
+    end
+    
+    Root --> Frontend
+    Root --> Payload
+    Frontend --> Home
+    Frontend --> Slug
+    Frontend --> Posts
+    Frontend --> Projects
+    Frontend --> Search
+    Frontend --> Design
+    Payload --> Admin
+    Payload --> API
+    Payload --> GraphQL
 ```
-src/
-├── app/
-│   ├── (frontend)/          # Public-facing routes
-│   │   ├── layout.tsx       # Root layout with providers
-│   │   ├── globals.css      # Global styles & CSS variables
-│   │   ├── page.tsx         # Homepage
-│   │   ├── [slug]/          # Dynamic pages
-│   │   └── posts/           # Blog posts
-│   └── (payload)/           # Admin panel routes
-├── components/              # Shared components
-│   ├── ui/                  # Base UI components
-│   ├── blocks/              # Content blocks
-│   └── ...                  # Feature components
-├── providers/               # React context providers
-└── utilities/               # Helper functions
-```
 
-### Component Hierarchy
+### Component Architecture Hierarchy
 
 ```mermaid
 graph TD
-    subgraph "Base Layer"
-        UI[UI Components]
-        Icons[Icon System]
-        Typography[Typography]
-    end
-    
-    subgraph "Component Layer"
-        Card[Card Component]
+    subgraph "Base UI Layer"
         Button[Button Component]
-        Link[Link Component]
+        Card[Card Component]
+        Badge[Badge Component]
+        Input[Input Component]
+        Select[Select Component]
+    end
+    
+    subgraph "Pattern Components"
+        PageHeader[PageHeader]
+        EmptyState[EmptyState]
+        DataCard[DataCard]
+        FeatureCard[FeatureCard]
+        FormField[FormField]
+    end
+    
+    subgraph "Feature Components"
+        ProjectCard[ProjectCard]
+        ProjectFilter[ProjectFilter]
+        TechnologyBadge[TechnologyBadge]
         Media[Media Component]
+        RichText[RichText]
     end
     
-    subgraph "Block Layer"
-        CTA[CallToAction Block]
-        Content[Content Block]
-        Archive[Archive Block]
-        Form[Form Block]
+    subgraph "Layout Components"
+        Header[Header Global]
+        Footer[Footer Global]
+        AdminBar[AdminBar]
+        LivePreview[LivePreviewListener]
     end
     
-    subgraph "Layout Layer"
-        Header[Header]
-        Footer[Footer]
-        Hero[Hero Sections]
+    subgraph "Block Components"
+        ProjectHero[ProjectHero Block]
+        TechnicalSpecs[TechnicalSpecs Block]
+        Code[Code Block]
+        MermaidDiagram[MermaidDiagram Block]
+        MediaGallery[MediaGallery Block]
+        ProjectMetrics[ProjectMetrics Block]
+        ProjectArchive[ProjectArchive Block]
     end
     
-    subgraph "Page Layer"
-        Pages[Dynamic Pages]
-        Posts[Blog Posts]
-        Search[Search Page]
-    end
+    Button --> PageHeader
+    Card --> ProjectCard
+    Badge --> TechnologyBadge
+    Input --> ProjectFilter
+    Select --> ProjectFilter
     
-    UI --> Card
-    UI --> Button
-    UI --> Link
+    PageHeader --> Projects
+    ProjectCard --> Projects
+    ProjectFilter --> Projects
+    TechnologyBadge --> Projects
     
-    Card --> Archive
-    Button --> CTA
-    Link --> Header
-    Media --> Content
-    
-    CTA --> Hero
-    Content --> Pages
-    Archive --> Posts
-    Form --> Pages
+    ProjectHero --> ProjectDetail
+    TechnicalSpecs --> ProjectDetail
+    Code --> ProjectDetail
+    MermaidDiagram --> ProjectDetail
+    MediaGallery --> ProjectDetail
+    ProjectMetrics --> ProjectDetail
+    ProjectArchive --> ProjectDetail
 ```
 
-## Theming System
+## Component System
 
-### CSS Variables Architecture
+### Core UI Components
 
-The theming system is built on CSS custom properties (variables) that enable dynamic theme switching and consistent design tokens across the application.
+#### Button Component
+**Location**: `src/components/ui/button.tsx`
 
-#### Core Variables Structure
-
-```css
-/* Light Theme (Default) */
-:root {
-  /* Colors */
-  --background: 0 0% 100%;          /* White */
-  --foreground: 222.2 84% 4.9%;     /* Dark blue/black */
-  
-  /* Card colors */
-  --card: 240 5% 96%;               /* Light gray */
-  --card-foreground: 222.2 84% 4.9%;
-  
-  /* Primary colors */
-  --primary: 222.2 47.4% 11.2%;     /* Dark blue */
-  --primary-foreground: 210 40% 98%;
-  
-  /* Secondary colors */
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  
-  /* UI colors */
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  
-  /* Semantic colors */
-  --destructive: 0 84.2% 60.2%;     /* Red */
-  --success: 196 52% 74%;           /* Green */
-  --warning: 34 89% 85%;            /* Yellow */
-  --error: 10 100% 86%;             /* Red variant */
-  
-  /* Borders & inputs */
-  --border: 240 6% 80%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-  
-  /* Radius */
-  --radius: 0.2rem;
-}
-
-/* Dark Theme */
-[data-theme='dark'] {
-  --background: 0 0% 0%;            /* Black */
-  --foreground: 210 40% 98%;        /* Light gray */
-  
-  --card: 0 0% 4%;                  /* Near black */
-  --card-foreground: 210 40% 98%;
-  
-  /* Inverted primary/secondary */
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  
-  /* Adjusted semantic colors for dark mode */
-  --success: 196 100% 14%;
-  --warning: 34 51% 25%;
-  --error: 10 39% 43%;
-}
-```
-
-### Theme Provider Implementation
-
-```mermaid
-sequenceDiagram
-    participant Browser
-    participant ThemeProvider
-    participant LocalStorage
-    participant DOM
-    
-    Browser->>ThemeProvider: Initialize
-    ThemeProvider->>LocalStorage: Check saved theme
-    LocalStorage-->>ThemeProvider: Return theme
-    
-    alt No saved theme
-        ThemeProvider->>Browser: Check system preference
-        Browser-->>ThemeProvider: Return preference
-    end
-    
-    ThemeProvider->>DOM: Set data-theme attribute
-    ThemeProvider->>DOM: Apply CSS variables
-    
-    Note over Browser: User changes theme
-    
-    Browser->>ThemeProvider: setTheme(newTheme)
-    ThemeProvider->>LocalStorage: Save theme
-    ThemeProvider->>DOM: Update data-theme
-    DOM-->>Browser: Re-render with new theme
-```
-
-### Theme Context Structure
-
+**Variants**:
 ```typescript
-// Theme types
-export type Theme = 'light' | 'dark'
-
-// Context type
-export interface ThemeContextType {
-  theme: Theme | undefined
-  setTheme: (theme: Theme | null) => void
-}
-
-// Provider pattern
-export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
-  // Theme state management
-  // System preference detection
-  // LocalStorage persistence
-  // DOM attribute management
+type ButtonVariants = {
+  variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size: 'default' | 'sm' | 'lg' | 'icon'
 }
 ```
 
-## Design System
-
-### Component Variants System
-
-Using `class-variance-authority` (CVA) for type-safe component variants:
-
-```typescript
-// Button variants example
-const buttonVariants = cva(
-  // Base styles
-  'inline-flex items-center justify-center whitespace-nowrap rounded text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-  {
-    variants: {
-      variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        outline: 'border border-border bg-background hover:bg-card hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-card hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
-      },
-      size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded px-3',
-        lg: 'h-11 rounded px-8',
-        icon: 'h-10 w-10',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  }
-)
+**Usage Examples**:
+```tsx
+<Button variant="default">Primary Action</Button>
+<Button variant="outline" size="lg">Secondary Action</Button>
+<Button variant="ghost" size="icon"><Search /></Button>
 ```
 
-### Typography System
+#### Card Component
+**Location**: `src/components/ui/card.tsx`
 
-```mermaid
-graph LR
-    subgraph "Font Families"
-        Sans[Geist Sans]
-        Mono[Geist Mono]
-    end
-    
-    subgraph "Text Sizes"
-        XS[text-xs - 0.75rem]
-        SM[text-sm - 0.875rem]
-        Base[text-base - 1rem]
-        LG[text-lg - 1.125rem]
-        XL[text-xl - 1.25rem]
-        XXL[text-2xl - 1.5rem]
-        XXXL[text-3xl - 1.875rem]
-    end
-    
-    subgraph "Font Weights"
-        Normal[font-normal - 400]
-        Medium[font-medium - 500]
-        Semibold[font-semibold - 600]
-        Bold[font-bold - 700]
-    end
-    
-    Sans --> Base
-    Sans --> Medium
-    Mono --> SM
-    Mono --> Normal
-```
-
-### Color Palette Usage
-
-```mermaid
-graph TD
-    subgraph "Base Colors"
-        Background[Background]
-        Foreground[Foreground]
-    end
-    
-    subgraph "Component Colors"
-        Card[Card]
-        Primary[Primary]
-        Secondary[Secondary]
-    end
-    
-    subgraph "Semantic Colors"
-        Success[Success]
-        Warning[Warning]
-        Error[Error]
-        Destructive[Destructive]
-    end
-    
-    subgraph "Usage"
-        Background --> PageBg[Page Background]
-        Foreground --> TextColor[Text Color]
-        Card --> CardBg[Card Background]
-        Primary --> Buttons[Primary Buttons]
-        Primary --> Links[Links]
-        Secondary --> SecButtons[Secondary Actions]
-        Success --> SuccessMsg[Success Messages]
-        Error --> ErrorMsg[Error Messages]
-    end
-```
-
-## Component Patterns
-
-### Composable Components
-
-The component system follows a composable pattern where complex components are built from simpler ones:
-
-```typescript
-// Base component composition
+**Composition**:
+```tsx
 <Card>
   <CardHeader>
     <CardTitle>Title</CardTitle>
     <CardDescription>Description</CardDescription>
   </CardHeader>
-  <CardContent>
-    {/* Content */}
-  </CardContent>
-  <CardFooter>
-    <Button>Action</Button>
-  </CardFooter>
+  <CardContent>Content</CardContent>
+  <CardFooter>Actions</CardFooter>
 </Card>
 ```
 
-### Consistent Styling Patterns
+#### Badge Component
+**Location**: `src/components/ui/badge.tsx`
 
-1. **Utility-First with Tailwind**
-   ```typescript
-   className={cn(
-     "base-styles",
-     variant && variantStyles[variant],
-     size && sizeStyles[size],
-     className // Allow overrides
-   )}
-   ```
+**Variants**: `default`, `secondary`, `destructive`, `outline`
 
-2. **CSS Variables for Dynamic Values**
-   ```css
-   .component {
-     background-color: hsl(var(--background));
-     color: hsl(var(--foreground));
-     border-radius: var(--radius);
-   }
-   ```
+### Pattern Components
 
-3. **Responsive Design**
-   ```typescript
-   className="text-sm md:text-base lg:text-lg"
-   ```
+#### PageHeader Component
+**Location**: `src/components/patterns/page-header.tsx`
 
-### Component API Consistency
+**Features**:
+- Animated title and description
+- Support for action buttons
+- Responsive typography
+- Optional breadcrumbs
 
-All components follow consistent prop patterns:
+**Usage**:
+```tsx
+<PageHeader 
+  title="Projects"
+  description="Explore my portfolio of web applications"
+>
+  <Button>Get Started</Button>
+</PageHeader>
+```
 
-```typescript
-interface ComponentProps {
-  // Styling
-  className?: string
-  variant?: 'default' | 'secondary' | 'outline'
-  size?: 'sm' | 'default' | 'lg'
-  
-  // Behavior
-  disabled?: boolean
-  loading?: boolean
-  
-  // Content
-  children?: React.ReactNode
-  
-  // Accessibility
-  'aria-label'?: string
-  role?: string
+#### EmptyState Component
+**Location**: `src/components/patterns/empty-state.tsx`
+
+**Features**:
+- Icon support
+- Action buttons
+- Link integration
+- Consistent messaging
+
+**Usage**:
+```tsx
+<EmptyState
+  icon={FileText}
+  title="No projects found"
+  description="Try adjusting your search criteria"
+  action={{
+    label: "Browse All Projects",
+    href: "/projects"
+  }}
+/>
+```
+
+### Feature Components
+
+#### ProjectCard Component
+**Location**: `src/components/ProjectCard/index.tsx`
+
+```mermaid
+graph LR
+    subgraph "ProjectCard Features"
+        Image[Hero Image Display]
+        Meta[Status & Featured Badges]
+        Content[Title & Description]
+        Tech[Technology List]
+        Links[Clickable Navigation]
+    end
+    
+    subgraph "Responsive Design"
+        Mobile[Mobile: Single Column]
+        Tablet[Tablet: 2 Columns]
+        Desktop[Desktop: 3-4 Columns]
+    end
+    
+    Image --> Mobile
+    Meta --> Mobile
+    Content --> Tablet
+    Tech --> Desktop
+    Links --> Desktop
+```
+
+**Key Features**:
+- Responsive image display with fallbacks
+- Status badges (completed, in-progress, archived)
+- Featured project highlighting
+- Technology stack display
+- Hover animations and transitions
+- SEO-optimized clickable areas
+
+#### ProjectFilter Component
+**Location**: `src/components/ProjectFilter/index.tsx`
+
+**Filter Capabilities**:
+```mermaid
+graph TD
+    subgraph "Filter Types"
+        Search[Full-text Search]
+        Status[Project Status]
+        Technology[Technology Filter]
+        Category[Category Filter]
+        Sort[Sort Options]
+    end
+    
+    subgraph "Filter Features"
+        Active[Active Filter Tags]
+        Quick[Quick Technology Buttons]
+        Clear[Clear All Filters]
+        URL[URL State Persistence]
+    end
+    
+    Search --> Active
+    Status --> Active
+    Technology --> Quick
+    Category --> Active
+    Sort --> URL
+    Active --> Clear
+```
+
+**Usage**:
+```tsx
+<ProjectFilter
+  technologies={technologies}
+  categories={categories}
+  className="mb-12"
+/>
+```
+
+#### TechnologyBadge Component
+**Location**: `src/components/TechnologyBadge.tsx`
+
+**Component Variants**:
+- `TechnologyBadge` - Individual badge
+- `TechnologyList` - Horizontal list of badges
+- `TechnologyGrid` - Grid layout with descriptions
+
+**Features**:
+- Icon integration with technology data
+- Brand color theming
+- Click handlers for navigation
+- Multiple size variants
+- Description support
+
+## Content Blocks System
+
+### Block Architecture
+
+```mermaid
+graph TB
+    subgraph "Block Categories"
+        Hero[Hero Blocks]
+        Content[Content Blocks]
+        Media[Media Blocks]
+        Data[Data Blocks]
+        Interactive[Interactive Blocks]
+    end
+    
+    subgraph "Project Hero Blocks"
+        ProjectHero[ProjectHero]
+    end
+    
+    subgraph "Content Blocks"
+        TechnicalSpecs[TechnicalSpecs]
+        ContentBlock[Content]
+        CodeBlock[Code]
+    end
+    
+    subgraph "Media Blocks"
+        MediaGallery[MediaGallery]
+        MediaBlock[MediaBlock]
+        MermaidDiagram[MermaidDiagram]
+    end
+    
+    subgraph "Data Blocks"
+        ProjectMetrics[ProjectMetrics]
+        ProjectArchive[ProjectArchive]
+    end
+    
+    subgraph "Interactive Blocks"
+        CallToAction[CallToAction]
+        FormBlock[Form]
+        Banner[Banner]
+    end
+    
+    Hero --> ProjectHero
+    Content --> TechnicalSpecs
+    Content --> ContentBlock
+    Content --> CodeBlock
+    Media --> MediaGallery
+    Media --> MediaBlock
+    Media --> MermaidDiagram
+    Data --> ProjectMetrics
+    Data --> ProjectArchive
+    Interactive --> CallToAction
+    Interactive --> FormBlock
+    Interactive --> Banner
+```
+
+### Available Blocks
+
+#### 1. ProjectHero Block
+**Location**: `src/blocks/ProjectHero/`
+
+**Fields**:
+- `title` - Hero title (defaults to project title)
+- `subtitle` - Optional tagline
+- `backgroundImage` - Background image with overlay
+- `stats` - Key project statistics array
+- `content` - Rich text content
+
+**Usage**: Hero sections for project showcases with statistics and compelling visuals.
+
+#### 2. TechnicalSpecs Block
+**Location**: `src/blocks/TechnicalSpecs/`
+
+**Fields**:
+- `architecture` - System architecture (rich text)
+- `requirements` - Categorized requirements array
+- `deployment` - Deployment strategy (rich text)
+- `performance` - Performance metrics object
+
+**Categories**: System, Software, Hardware, Network, Security, Performance
+
+#### 3. Code Block (Enhanced)
+**Location**: `src/blocks/Code/`
+
+**Features**:
+- **25+ Programming Languages**: TypeScript, JavaScript, Python, Java, C++, Go, Rust, PHP, Ruby, Swift, Kotlin, SQL, HTML, CSS, SCSS, JSON, YAML, XML, Markdown, Bash, PowerShell, Docker
+- **Filename Display**: Optional filename with header styling
+- **Line Highlighting**: Support for ranges (e.g., "1,3,5-7")
+- **Syntax Highlighting**: Prism.js integration with dark theme
+- **Copy Functionality**: One-click code copying
+
+**Usage Example**:
+```yaml
+language: typescript
+filename: "api/users.ts"
+highlightLines: "1,5-8,12"
+description: "User authentication endpoint"
+code: |
+  export async function POST(request: Request) {
+    const { email, password } = await request.json()
+    // Authentication logic here
+  }
+```
+
+#### 4. MermaidDiagram Block
+**Location**: `src/blocks/MermaidDiagram/`
+
+**Diagram Types**:
+- Flowchart
+- Sequence Diagram
+- Class Diagram
+- State Diagram
+- Entity Relationship
+- Gantt Chart
+- Git Graph
+- User Journey
+- Pie Chart
+
+**Features**:
+- Client-side rendering to avoid SSR issues
+- Dark theme configuration
+- Error handling with code inspection
+- Loading states
+
+#### 5. MediaGallery Block
+**Location**: `src/blocks/MediaGallery/`
+
+**Layout Options**:
+- **Grid**: 2, 3, or 4 columns with aspect ratio control
+- **Carousel**: Interactive slider with navigation
+- **Masonry**: Pinterest-style layout
+
+**Features**:
+- Caption support (overlay or below)
+- Responsive image sizing
+- Lightbox integration
+- Alt text for accessibility
+
+#### 6. ProjectMetrics Block
+**Location**: `src/blocks/ProjectMetrics/`
+
+**Layout Types**:
+- Cards - Visual metric cards
+- List - Compact list view
+- Grid - Auto-adjusting grid
+
+**Metric Properties**:
+- Label, value, unit, description
+- Optional icons
+- Color theming (7 color themes)
+
+#### 7. ProjectArchive Block
+**Location**: `src/blocks/ProjectArchive/`
+
+**Population Methods**:
+- Collection-based with filtering
+- Manual project selection
+
+**Filter Options**:
+- Categories, technologies, status
+- Featured-only option
+- Sort methods
+
+**Display Styles**:
+- Grid, List, Cards
+- Column configuration
+- Pagination support
+
+### Block Rendering System
+
+**Location**: `src/blocks/RenderBlocks.tsx`
+
+```mermaid
+sequenceDiagram
+    participant Page
+    participant RenderBlocks
+    participant BlockComponent
+    participant Props
+    
+    Page->>RenderBlocks: layout blocks array
+    RenderBlocks->>RenderBlocks: map blocks
+    
+    loop For each block
+        RenderBlocks->>RenderBlocks: get blockType
+        RenderBlocks->>BlockComponent: render with props
+        BlockComponent->>Props: validate props
+        Props-->>BlockComponent: typed props
+        BlockComponent-->>RenderBlocks: JSX element
+    end
+    
+    RenderBlocks-->>Page: rendered blocks
+```
+
+## Page Architecture
+
+### Project Pages
+
+#### Projects Listing Page
+**Location**: `src/app/(frontend)/projects/page.tsx`
+
+**Features**:
+```mermaid
+graph TD
+    subgraph "Page Sections"
+        Header[Page Header with Stats]
+        Filter[Project Filter Interface]
+        Featured[Featured Projects Section]
+        Regular[All Projects Grid]
+        Pagination[Pagination Controls]
+    end
+    
+    subgraph "Dynamic Features"
+        Search[Real-time Search]
+        Filters[Multiple Filter Types]
+        Sort[Sort Options]
+        URLState[URL State Management]
+    end
+    
+    Header --> Filter
+    Filter --> Search
+    Filter --> Filters
+    Filter --> Sort
+    Featured --> Regular
+    Regular --> Pagination
+    Search --> URLState
+    Filters --> URLState
+    Sort --> URLState
+```
+
+**Query Parameters**:
+- `search` - Full-text search
+- `status` - Project status filter
+- `technology` - Technology slug filter
+- `category` - Category slug filter
+- `sort` - Sort method
+- `page` - Pagination
+
+#### Project Detail Page
+**Location**: `src/app/(frontend)/projects/[slug]/page.tsx`
+
+**Components**:
+- `ProjectHero` - Hero section with metadata
+- `ProjectContent` - Block-based content rendering
+- `RelatedProjects` - Intelligent project suggestions
+
+**Features**:
+- Static generation with ISR
+- Deep relationship population (depth: 3)
+- SEO meta generation
+- Live preview support
+- Related projects based on technologies/categories
+
+#### Technology Filter Pages
+**Location**: `src/app/(frontend)/projects/technology/[slug]/page.tsx`
+
+**Features**:
+- Technology showcase with icon and description
+- Filtered project results
+- Related technologies display
+- External links (official website, documentation)
+
+#### Category Filter Pages
+**Location**: `src/app/(frontend)/projects/category/[slug]/page.tsx`
+
+**Features**:
+- Category branding with colors
+- Category hierarchy navigation
+- Cross-category discovery
+- Icon support with fallbacks
+
+### Static Generation Strategy
+
+```mermaid
+graph TD
+    subgraph "Build Time"
+        Generate[generateStaticParams]
+        Fetch[Fetch All Slugs]
+        Create[Create Static Pages]
+    end
+    
+    subgraph "Runtime"
+        Request[Incoming Request]
+        Cache[Check Static Cache]
+        Revalidate[ISR Revalidation]
+    end
+    
+    subgraph "Cache Strategy"
+        Static[Static Pages - Never Expire]
+        ISR[ISR Pages - 600s TTL]
+        Dynamic[Dynamic Pages - No Cache]
+    end
+    
+    Generate --> Fetch
+    Fetch --> Create
+    Create --> Static
+    
+    Request --> Cache
+    Cache --> ISR
+    ISR --> Dynamic
+```
+
+## Design System Implementation
+
+### Theme System
+
+```mermaid
+graph TD
+    subgraph "CSS Variables"
+        Light[Light Theme Variables]
+        Dark[Dark Theme Variables]
+        System[System Preference Detection]
+    end
+    
+    subgraph "Theme Provider"
+        Context[Theme Context]
+        Storage[localStorage Persistence]
+        DOM[DOM Attribute Management]
+    end
+    
+    subgraph "Component Integration"
+        Semantic[Semantic Color Usage]
+        Variants[Component Variants]
+        Responsive[Responsive Breakpoints]
+    end
+    
+    Light --> Context
+    Dark --> Context
+    System --> Context
+    Context --> Storage
+    Context --> DOM
+    
+    DOM --> Semantic
+    Semantic --> Variants
+    Variants --> Responsive
+```
+
+### Brand Colors (Perplexity-Inspired)
+
+```css
+:root {
+  /* Perplexity Brand Colors */
+  --perplexity-true-turquoise: #20808D;
+  --perplexity-plex-blue: #1FB8CD;
+  --perplexity-darker-peacock: #1A6B73;
+  --perplexity-peacock: #218B94;
+  --perplexity-inky-blue: #0C2B33;
+  --perplexity-paper-white: #FEFEFE;
+  --perplexity-offblack: #0A0F0F;
 }
+```
+
+### Typography System
+
+**Fonts**:
+- **Space Grotesk** - Headings and body text
+- **Space Mono** - Code blocks and monospace
+
+**Scale**:
+- Display: 61px (Hero sections)
+- H1: 49px (Page titles)
+- H2: 39px (Section headings)
+- H3: 31px (Subsections)
+- Body: 16px (Regular content)
+- Small: 13px (Captions)
+
+### Component Styling Patterns
+
+**Utility Classes**:
+```css
+/* Spacing System (8px grid) */
+.p-4    /* 16px padding */
+.p-6    /* 24px padding */
+.p-8    /* 32px padding */
+.gap-4  /* 16px gap */
+.gap-6  /* 24px gap */
+
+/* Layout Patterns */
+.container-content   /* Max-width content container */
+.section-spacing     /* Standard section padding */
+.content-spacing     /* Content element spacing */
 ```
 
 ## State Management
 
-### Context Architecture
+### State Architecture
 
 ```mermaid
 graph TD
-    subgraph "Global Contexts"
-        Theme[ThemeContext]
-        HeaderTheme[HeaderThemeContext]
+    subgraph "Global State"
+        Theme[Theme Context]
+        Header[Header Theme Context]
+        Preview[Live Preview Context]
     end
     
-    subgraph "Feature Contexts"
-        Auth[AuthContext]
-        Preview[PreviewContext]
+    subgraph "URL State"
+        SearchParams[Search Parameters]
+        Routing[Next.js Router]
+        Filters[Filter State]
     end
     
     subgraph "Local State"
-        Component[Component State]
-        Form[Form State]
+        ComponentState[Component useState]
+        FormState[Form State]
+        UIState[UI State]
     end
     
-    Theme --> Component
-    HeaderTheme --> Header
-    Auth --> Admin
-    Preview --> LivePreview
+    subgraph "Server State"
+        StaticData[Static Props]
+        ISRData[ISR Data]
+        ClientFetch[Client Fetching]
+    end
+    
+    Theme --> ComponentState
+    Header --> ComponentState
+    Preview --> ComponentState
+    
+    SearchParams --> Filters
+    Routing --> Filters
+    Filters --> ComponentState
+    
+    StaticData --> ComponentState
+    ISRData --> ComponentState
+    ClientFetch --> ComponentState
 ```
 
-### State Flow Patterns
+### State Management Patterns
 
-1. **Server State**: Fetched via Server Components
-2. **Client State**: Managed with React hooks
-3. **URL State**: Query parameters for filters
-4. **Form State**: React Hook Form integration
+#### Theme State
+```typescript
+const { theme, setTheme, resolvedTheme } = useTheme()
+// theme: 'light' | 'dark' | 'system'
+// resolvedTheme: 'light' | 'dark'
+```
+
+#### URL State Management
+```typescript
+const updateFilters = useCallback((updates: Record<string, string | null>) => {
+  const params = new URLSearchParams(searchParams.toString())
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value) params.set(key, value)
+    else params.delete(key)
+  })
+  router.push(`/projects?${params.toString()}`)
+}, [searchParams, router])
+```
 
 ## Performance Patterns
 
-### Component Optimization
+### Optimization Strategies
 
-1. **Server Components by Default**
-   ```typescript
-   // Server Component (default)
-   export async function PostList() {
-     const posts = await getPosts()
-     return <div>{/* render */}</div>
-   }
-   
-   // Client Component (explicit)
-   'use client'
-   export function InteractiveComponent() {
-     const [state, setState] = useState()
-     return <div>{/* render */}</div>
-   }
-   ```
-
-2. **Dynamic Imports**
-   ```typescript
-   const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
-     loading: () => <Skeleton />,
-     ssr: false
-   })
-   ```
-
-3. **Image Optimization**
-   ```typescript
-   <Image
-     src={image.url}
-     alt={image.alt}
-     width={1200}
-     height={630}
-     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-     priority={isAboveFold}
-   />
-   ```
-
-### Styling Performance
-
-1. **CSS Variables for Dynamic Themes**: No runtime style calculations
-2. **Tailwind Purging**: Only used classes are included
-3. **Component-Level Code Splitting**: Styles load with components
-
-## Theming Best Practices
-
-### 1. Consistent Token Usage
-
-Always use design tokens through CSS variables:
-
-```css
-/* ✅ Good */
-.component {
-  background: hsl(var(--card));
-  color: hsl(var(--card-foreground));
-}
-
-/* ❌ Bad */
-.component {
-  background: #f5f5f5;
-  color: #333;
-}
+```mermaid
+graph TB
+    subgraph "Build Optimization"
+        SSG[Static Site Generation]
+        ISR[Incremental Static Regeneration]
+        TreeShaking[Tree Shaking]
+        CodeSplitting[Code Splitting]
+    end
+    
+    subgraph "Runtime Optimization"
+        LazyLoading[Lazy Loading]
+        ImageOptimization[Image Optimization]
+        Caching[Response Caching]
+        Prefetching[Link Prefetching]
+    end
+    
+    subgraph "Client Optimization"
+        ComponentMemo[React.memo]
+        UseMemo[useMemo]
+        UseCallback[useCallback]
+        DynamicImports[Dynamic Imports]
+    end
+    
+    SSG --> ISR
+    ISR --> TreeShaking
+    TreeShaking --> CodeSplitting
+    
+    LazyLoading --> ImageOptimization
+    ImageOptimization --> Caching
+    Caching --> Prefetching
+    
+    ComponentMemo --> UseMemo
+    UseMemo --> UseCallback
+    UseCallback --> DynamicImports
 ```
 
-### 2. Semantic Color Names
-
-Use semantic names that describe purpose, not appearance:
-
-```css
-/* ✅ Good */
---primary, --secondary, --destructive
-
-/* ❌ Bad */
---blue, --gray, --red
-```
-
-### 3. Component Variants
-
-Create variants for different states and uses:
+### Image Optimization
 
 ```typescript
-<Button variant="default">Save</Button>
-<Button variant="destructive">Delete</Button>
-<Button variant="outline">Cancel</Button>
+<Media
+  resource={heroImage}
+  size="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  className="object-cover w-full h-full"
+  priority={isAboveFold}
+/>
 ```
 
-### 4. Dark Mode Considerations
+### Dynamic Imports
 
-- Test all components in both themes
-- Ensure sufficient contrast ratios
-- Adjust shadows and borders for visibility
-- Use semantic colors that adapt automatically
+```typescript
+// Mermaid diagram client-side loading
+const MermaidDiagram = dynamic(() => import('./Component.client'), {
+  loading: () => <div>Loading diagram...</div>,
+  ssr: false
+})
+```
 
-### 5. Accessibility
+## Development Guidelines
 
-- Maintain WCAG AA contrast ratios (4.5:1 for normal text, 3:1 for large text)
-- Provide focus indicators
-- Support keyboard navigation
-- Include proper ARIA attributes
-
-## Component Development Workflow
+### Component Development Workflow
 
 ```mermaid
 graph LR
-    A[Design Token] --> B[CSS Variable]
-    B --> C[Tailwind Class]
-    C --> D[Component Variant]
-    D --> E[Composed Component]
-    E --> F[Page/Feature]
-    
-    G[Theme Change] --> B
-    H[Responsive] --> C
-    I[State] --> D
+    Design[Design System Review] --> Token[Use Design Tokens]
+    Token --> Component[Create Component]
+    Component --> Types[Add TypeScript Types]
+    Types --> Test[Test Responsiveness]
+    Test --> Document[Document Usage]
 ```
 
-## Summary
+### Best Practices
 
-The frontend architecture provides:
+#### 1. Component Structure
+```typescript
+// Component props interface
+interface ComponentProps {
+  className?: string
+  variant?: 'default' | 'secondary'
+  size?: 'sm' | 'md' | 'lg'
+  children?: React.ReactNode
+}
 
-1. **Consistent Theming**: CSS variables enable instant theme switching
-2. **Type Safety**: TypeScript throughout with proper interfaces
-3. **Performance**: Server Components and optimized client code
-4. **Accessibility**: Built-in ARIA support and keyboard navigation
-5. **Maintainability**: Clear patterns and composable components
-6. **Responsive**: Mobile-first with Tailwind breakpoints
+// Component implementation
+export const Component: React.FC<ComponentProps> = ({
+  className,
+  variant = 'default',
+  size = 'md',
+  children,
+}) => {
+  return (
+    <div className={cn(
+      'base-styles',
+      variantStyles[variant],
+      sizeStyles[size],
+      className
+    )}>
+      {children}
+    </div>
+  )
+}
+```
 
-This architecture ensures a cohesive design system that scales with your application while maintaining performance and developer experience.
+#### 2. Styling Guidelines
+- Use semantic CSS variables
+- Follow the 8px spacing grid
+- Implement mobile-first responsive design
+- Maintain consistent hover/focus states
+- Ensure WCAG AA contrast ratios
+
+#### 3. Performance Guidelines
+- Use Server Components by default
+- Client Components only for interactivity
+- Implement proper loading states
+- Optimize images and media
+- Use React.memo for expensive components
+
+### File Organization
+
+```
+src/
+├── app/                    # Next.js App Router
+├── components/
+│   ├── ui/                # Base UI components
+│   ├── patterns/          # Reusable patterns
+│   └── feature/           # Feature-specific components
+├── blocks/                # Content blocks
+├── providers/             # React contexts
+├── utilities/             # Helper functions
+└── styles/               # Global styles
+```
+
+This frontend architecture provides a solid foundation for building scalable, performant, and maintainable React applications with PayloadCMS integration. The component system is designed for reusability, the design system ensures consistency, and the performance patterns optimize for production deployment.

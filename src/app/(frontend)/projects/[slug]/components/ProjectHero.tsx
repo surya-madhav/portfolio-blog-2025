@@ -7,7 +7,7 @@ import { Media } from '@/components/Media'
 import { TechnologyList } from '@/components/TechnologyBadge'
 import { ExternalLink, Github, FileText, Calendar, Clock, Star } from 'lucide-react'
 
-import type { Project } from '@/payload-types'
+import type { Project, Technology } from '@/payload-types'
 
 interface ProjectHeroProps {
   project: Project
@@ -47,7 +47,7 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({ project }) => {
     },
   }
 
-  const currentStatus = statusConfig[projectStatus] || statusConfig['completed']
+  const currentStatus = statusConfig[projectStatus || 'completed'] || statusConfig['completed']
 
   return (
     <section className="relative py-24 bg-gradient-to-br from-background via-background to-muted/30">
@@ -129,7 +129,7 @@ export const ProjectHero: React.FC<ProjectHeroProps> = ({ project }) => {
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">Technologies Used</h3>
                 <TechnologyList
-                  technologies={technologies as any[]}
+                  technologies={technologies as Technology[]}
                   size="md"
                   showIcons={true}
                   onTechnologyClick={(tech) => {

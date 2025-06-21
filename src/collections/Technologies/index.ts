@@ -65,7 +65,8 @@ export const Technologies: CollectionConfig = {
     {
       name: 'officialWebsite',
       type: 'text',
-      validate: (val) => !val || val.startsWith('http') || 'Must be a valid URL',
+      validate: (val: unknown) =>
+        !val || (val as string).startsWith('http') || 'Must be a valid URL',
       admin: {
         description: 'Official website URL',
       },
@@ -73,7 +74,8 @@ export const Technologies: CollectionConfig = {
     {
       name: 'documentation',
       type: 'text',
-      validate: (val) => !val || val.startsWith('http') || 'Must be a valid URL',
+      validate: (val: unknown) =>
+        !val || (val as string).startsWith('http') || 'Must be a valid URL',
       admin: {
         description: 'Documentation URL',
       },
@@ -84,7 +86,10 @@ export const Technologies: CollectionConfig = {
       admin: {
         description: 'Brand color for UI theming (hex code, e.g., #61DAFB)',
       },
-      validate: (val) => !val || /^#[0-9A-F]{6}$/i.test(val) || 'Must be a valid hex color code (e.g., #61DAFB)',
+      validate: (val: unknown) =>
+        !val ||
+        /^#[0-9A-F]{6}$/i.test(val as string) ||
+        'Must be a valid hex color code (e.g., #61DAFB)',
     },
     ...slugField(),
   ],

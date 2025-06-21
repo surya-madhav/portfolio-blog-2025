@@ -20,19 +20,21 @@ const generateTitle: GenerateTitle<Post | Page | Project> = ({ doc }) => {
 
 const generateURL: GenerateURL<Post | Page | Project> = ({ doc, req }) => {
   const url = getServerSideURL()
-  
+
   if (!doc?.slug) return url
-  
-  // Handle different collections
-  if (req.collection?.slug === 'projects') {
+
+  // Handle different collections based on document type
+  if ('projectStatus' in doc) {
+    // This is a Project
     return `${url}/projects/${doc.slug}`
   }
-  
-  if (req.collection?.slug === 'posts') {
+
+  if ('publishedAt' in doc && 'authors' in doc) {
+    // This is a Post
     return `${url}/posts/${doc.slug}`
   }
-  
-  // Pages have no prefix
+
+  // Default to Pages (no prefix)
   return `${url}/${doc.slug}`
 }
 

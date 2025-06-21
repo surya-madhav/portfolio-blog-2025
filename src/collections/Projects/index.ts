@@ -126,7 +126,10 @@ export const Projects: CollectionConfig<'projects'> = {
         {
           name: 'github',
           type: 'text',
-          validate: (val) => !val || val.startsWith('https://github.com/') || 'Must be a valid GitHub URL',
+          validate: (val: unknown) =>
+            !val ||
+            (val as string).startsWith('https://github.com/') ||
+            'Must be a valid GitHub URL',
           admin: {
             description: 'GitHub repository URL',
           },
@@ -134,7 +137,8 @@ export const Projects: CollectionConfig<'projects'> = {
         {
           name: 'liveDemo',
           type: 'text',
-          validate: (val) => !val || val.startsWith('http') || 'Must be a valid URL',
+          validate: (val: unknown) =>
+            !val || (val as string).startsWith('http') || 'Must be a valid URL',
           admin: {
             description: 'Live demo/production URL',
           },
@@ -142,7 +146,8 @@ export const Projects: CollectionConfig<'projects'> = {
         {
           name: 'documentation',
           type: 'text',
-          validate: (val) => !val || val.startsWith('http') || 'Must be a valid URL',
+          validate: (val: unknown) =>
+            !val || (val as string).startsWith('http') || 'Must be a valid URL',
           admin: {
             description: 'Documentation URL',
           },

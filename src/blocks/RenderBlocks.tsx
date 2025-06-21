@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 
-import type { Page } from '@/payload-types'
+import type { Page, Project } from '@/payload-types'
 
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
@@ -15,6 +15,9 @@ import { MermaidDiagramBlock } from '@/blocks/MermaidDiagram/Component'
 import { MediaGalleryBlock } from '@/blocks/MediaGallery/Component'
 import { ProjectMetricsBlock } from '@/blocks/ProjectMetrics/Component'
 import { ProjectArchiveBlock } from '@/blocks/ProjectArchive/Component'
+
+// Create a union type for all possible blocks
+type AllBlocks = Page['layout'][0] | NonNullable<Project['layout']>[0]
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -33,7 +36,7 @@ const blockComponents = {
 }
 
 export const RenderBlocks: React.FC<{
-  blocks: Page['layout'][0][]
+  blocks: AllBlocks[]
 }> = (props) => {
   const { blocks } = props
 

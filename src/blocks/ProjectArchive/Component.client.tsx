@@ -1,20 +1,48 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import RichText from '@/components/RichText'
 import { TechnologyList } from '@/components/TechnologyBadge'
-import { Media } from '@/components/Media'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ExternalLink, Github } from 'lucide-react'
-import type { ProjectArchiveProps } from './Component'
-import type { Project } from '@/payload-types'
+import type { Project, Technology } from '@/payload-types'
 
-// Mock function - in real implementation, this would be an API call
-const fetchProjects = async (filters: any): Promise<{ projects: Project[], total: number }> => {
-  // This is a placeholder - would be replaced with actual API call
-  return { projects: [], total: 0 }
+interface ProjectArchiveProps {
+  introContent?: {
+    root: {
+      type: string
+      children: {
+        type: string
+        version: number
+        [k: string]: unknown
+      }[]
+      direction: ('ltr' | 'rtl') | null
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+      indent: number
+      version: number
+    }
+    [k: string]: unknown
+  } | null
+  populateBy?: 'collection' | 'selection'
+  categories?: number[]
+  technologies?: number[]
+  projectStatus?: 'all' | 'in-progress' | 'completed' | 'archived'
+  featuredOnly?: boolean
+  limit?: number
+  selectedDocs?: Project[]
+  displayStyle?: 'grid' | 'list' | 'cards'
+  columns?: '2' | '3' | '4'
+  showFilters?: boolean
+  showPagination?: boolean
 }
 
 export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: string }> = ({
@@ -37,10 +65,74 @@ export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: 
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState({
-    category: '',
-    technology: '',
     status: projectStatus,
   })
+
+  const loadProjects = useCallback(async () => {
+    if (populateBy === 'selection' && selectedDocs) {
+      setProjects(selectedDocs)
+      setTotal(selectedDocs.length)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+
+      // Build query parameters
+      params.append('limit', limit.toString())
+      params.append('page', currentPage.toString())
+      params.append('depth', '2')
+      params.append('where[_status][equals]', 'published')
+      params.append('sort', '-createdAt')
+
+      if (filters.status !== 'all') {
+        params.append('where[projectStatus][equals]', filters.status)
+      }
+
+      if (featuredOnly) {
+        params.append('where[featured][equals]', 'true')
+      }
+
+      if (categories && categories.length > 0) {
+        categories.forEach((categoryId, index) => {
+          params.append(`where[categories][in][${index}]`, categoryId.toString())
+        })
+      }
+
+      if (technologies && technologies.length > 0) {
+        technologies.forEach((technologyId, index) => {
+          params.append(`where[technologies][in][${index}]`, technologyId.toString())
+        })
+      }
+
+      const response = await fetch(`/api/projects?${params.toString()}`)
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects')
+      }
+
+      const result = await response.json()
+
+      setProjects(result.docs || [])
+      setTotal(result.totalDocs || 0)
+    } catch (error) {
+      console.error('Failed to load projects:', error)
+      setProjects([])
+      setTotal(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [
+    categories,
+    technologies,
+    filters.status,
+    featuredOnly,
+    limit,
+    currentPage,
+    populateBy,
+    selectedDocs,
+  ])
 
   useEffect(() => {
     if (populateBy === 'selection' && selectedDocs) {
@@ -49,48 +141,41 @@ export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: 
     } else {
       loadProjects()
     }
-  }, [populateBy, selectedDocs, filters, currentPage])
+  }, [populateBy, selectedDocs, loadProjects])
 
-  const loadProjects = async () => {
-    setLoading(true)
-    try {
-      const result = await fetchProjects({
-        categories: categories?.map(c => c.id),
-        technologies: technologies?.map(t => t.id),
-        status: filters.status !== 'all' ? filters.status : undefined,
-        featured: featuredOnly || undefined,
-        limit,
-        page: currentPage,
-      })
-      setProjects(result.projects)
-      setTotal(result.total)
-    } catch (error) {
-      console.error('Failed to load projects:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const renderProject = (project: Project, index: number) => {
+  const renderProject = (project: Project, _index: number) => {
     if (displayStyle === 'list') {
       return (
-        <div key={project.id} className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow">
+        <div
+          key={project.id}
+          className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
+        >
           {project.heroImage && (
             <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden">
-              <Media resource={project.heroImage} className="w-full h-full object-cover" />
+              <Image
+                src={
+                  typeof project.heroImage === 'object' && project.heroImage?.url
+                    ? project.heroImage.url
+                    : ''
+                }
+                alt={project.title}
+                width={96}
+                height={96}
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
           <div className="flex-1">
             <div className="flex items-start justify-between mb-2">
               <h3 className="text-lg font-semibold">{project.title}</h3>
-              {project.featured && (
-                <Badge variant="secondary">Featured</Badge>
-              )}
+              {project.featured && <Badge variant="secondary">Featured</Badge>}
             </div>
             <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{project.description}</p>
             {project.technologies && project.technologies.length > 0 && (
-              <TechnologyList 
-                technologies={project.technologies as any}
+              <TechnologyList
+                technologies={project.technologies.filter(
+                  (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+                )}
                 size="sm"
                 className="mb-3"
               />
@@ -122,23 +207,30 @@ export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: 
       <Card key={project.id} className="group hover:shadow-lg transition-shadow">
         {project.heroImage && (
           <div className="aspect-video overflow-hidden rounded-t-lg">
-            <Media 
-              resource={project.heroImage} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+            <Image
+              src={
+                typeof project.heroImage === 'object' && project.heroImage?.url
+                  ? project.heroImage.url
+                  : ''
+              }
+              alt={project.title}
+              width={400}
+              height={225}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         )}
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-lg font-semibold">{project.title}</h3>
-            {project.featured && (
-              <Badge variant="secondary">Featured</Badge>
-            )}
+            {project.featured && <Badge variant="secondary">Featured</Badge>}
           </div>
           <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{project.description}</p>
           {project.technologies && project.technologies.length > 0 && (
-            <TechnologyList 
-              technologies={project.technologies as any}
+            <TechnologyList
+              technologies={project.technologies.filter(
+                (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+              )}
               size="sm"
             />
           )}
@@ -167,13 +259,13 @@ export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: 
 
   const getGridClasses = () => {
     if (displayStyle === 'list') return ''
-    
+
     const columnClasses = {
       '2': 'grid-cols-1 md:grid-cols-2',
       '3': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
       '4': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
     }
-    
+
     return `grid gap-6 ${columnClasses[columns || '3']}`
   }
 
@@ -189,7 +281,15 @@ export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: 
       {/* Filters */}
       {showFilters && (
         <div className="flex flex-wrap gap-4 p-4 bg-muted rounded-lg">
-          <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
+          <Select
+            value={filters.status}
+            onValueChange={(value) =>
+              setFilters({
+                ...filters,
+                status: value as 'all' | 'in-progress' | 'completed' | 'archived',
+              })
+            }
+          >
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -200,7 +300,7 @@ export const ProjectArchiveClient: React.FC<ProjectArchiveProps & { className?: 
               <SelectItem value="archived">Archived</SelectItem>
             </SelectContent>
           </Select>
-          
+
           {/* Additional filters would go here */}
         </div>
       )}

@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { X, Search, Filter } from 'lucide-react'
 import type { Technology, ProjectCategory } from '@/payload-types'
 import { TechnologyBadge } from '@/components/TechnologyBadge'
+import Image from 'next/image'
 
 interface ProjectFilterProps {
   technologies: Technology[]
@@ -24,11 +25,11 @@ interface ProjectFilterProps {
 export const ProjectFilter: React.FC<ProjectFilterProps> = ({
   technologies,
   categories,
-  className
+  className,
 }) => {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   // Get current filter values
   const currentSearch = searchParams.get('search') || ''
   const currentStatus = searchParams.get('status') || ''
@@ -37,46 +38,64 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
   const currentSort = searchParams.get('sort') || 'newest'
 
   // Helper function to update URL params
-  const updateFilters = useCallback((updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString())
-    
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
+  const updateFilters = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
+
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, value)
+        } else {
+          params.delete(key)
+        }
+      })
+
+      // Reset to first page when filters change
+      if (Object.keys(updates).some((key) => key !== 'page')) {
+        params.delete('page')
       }
-    })
 
-    // Reset to first page when filters change
-    if (Object.keys(updates).some(key => key !== 'page')) {
-      params.delete('page')
-    }
-
-    router.push(`/projects?${params.toString()}`)
-  }, [searchParams, router])
+      router.push(`/projects?${params.toString()}`)
+    },
+    [searchParams, router],
+  )
 
   // Handle search input
-  const handleSearchChange = useCallback((value: string) => {
-    updateFilters({ search: value || null })
-  }, [updateFilters])
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      updateFilters({ search: value || null })
+    },
+    [updateFilters],
+  )
 
   // Handle filter changes
-  const handleStatusChange = useCallback((value: string) => {
-    updateFilters({ status: value === 'all' ? null : value })
-  }, [updateFilters])
+  const handleStatusChange = useCallback(
+    (value: string) => {
+      updateFilters({ status: value === 'all' ? null : value })
+    },
+    [updateFilters],
+  )
 
-  const handleTechnologyChange = useCallback((technologySlug: string) => {
-    updateFilters({ technology: technologySlug === 'all' ? null : technologySlug })
-  }, [updateFilters])
+  const handleTechnologyChange = useCallback(
+    (technologySlug: string) => {
+      updateFilters({ technology: technologySlug === 'all' ? null : technologySlug })
+    },
+    [updateFilters],
+  )
 
-  const handleCategoryChange = useCallback((categorySlug: string) => {
-    updateFilters({ category: categorySlug === 'all' ? null : categorySlug })
-  }, [updateFilters])
+  const handleCategoryChange = useCallback(
+    (categorySlug: string) => {
+      updateFilters({ category: categorySlug === 'all' ? null : categorySlug })
+    },
+    [updateFilters],
+  )
 
-  const handleSortChange = useCallback((value: string) => {
-    updateFilters({ sort: value })
-  }, [updateFilters])
+  const handleSortChange = useCallback(
+    (value: string) => {
+      updateFilters({ sort: value })
+    },
+    [updateFilters],
+  )
 
   // Clear all filters
   const clearFilters = useCallback(() => {
@@ -84,7 +103,12 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
   }, [router])
 
   // Check if any filters are active
-  const hasActiveFilters = !!(currentSearch || currentStatus || currentTechnology || currentCategory)
+  const hasActiveFilters = !!(
+    currentSearch ||
+    currentStatus ||
+    currentTechnology ||
+    currentCategory
+  )
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -128,21 +152,26 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           <SelectContent>
             <SelectItem value="all">All Technologies</SelectItem>
             {technologies
-              .filter(tech => tech.slug && tech.slug.trim() !== '') // Filter out empty slugs
+              .filter((tech) => tech.slug && tech.slug.trim() !== '') // Filter out empty slugs
               .map((tech) => (
-              <SelectItem key={tech.id} value={tech.slug}>
-                <div className="flex items-center gap-2">
-                  {tech.icon && typeof tech.icon !== 'string' && (
-                    <img 
-                      src={tech.icon.url} 
-                      alt={`${tech.name} icon`}
-                      className="w-4 h-4"
-                    />
-                  )}
-                  {tech.name}
-                </div>
-              </SelectItem>
-            ))}
+                <SelectItem key={tech.id} value={tech.slug || ''}>
+                  <div className="flex items-center gap-2">
+                    {tech.icon &&
+                      typeof tech.icon === 'object' &&
+                      tech.icon !== null &&
+                      'url' in tech.icon && (
+                        <Image
+                          src={tech.icon.url || ''}
+                          alt={`${tech.name} icon`}
+                          width={16}
+                          height={16}
+                          className="w-4 h-4"
+                        />
+                      )}
+                    {tech.name}
+                  </div>
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 
@@ -154,12 +183,12 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {categories
-              .filter(category => category.slug && category.slug.trim() !== '') // Filter out empty slugs
+              .filter((category) => category.slug && category.slug.trim() !== '') // Filter out empty slugs
               .map((category) => (
-              <SelectItem key={category.id} value={category.slug}>
-                {category.name}
-              </SelectItem>
-            ))}
+                <SelectItem key={category.id} value={category.slug || ''}>
+                  {category.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 
@@ -178,12 +207,7 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
 
         {/* Clear Filters Button */}
         {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearFilters}
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={clearFilters} className="gap-2">
             <X className="w-4 h-4" />
             Clear Filters
           </Button>
@@ -195,39 +219,39 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
         <div className="flex flex-wrap gap-2">
           {currentSearch && (
             <Badge variant="secondary" className="gap-2">
-              Search: "{currentSearch}"
-              <X 
-                className="w-3 h-3 cursor-pointer hover:text-destructive" 
+              Search: &quot;{currentSearch}&quot;
+              <X
+                className="w-3 h-3 cursor-pointer hover:text-destructive"
                 onClick={() => handleSearchChange('')}
               />
             </Badge>
           )}
-          
+
           {currentStatus && (
             <Badge variant="secondary" className="gap-2 capitalize">
               Status: {currentStatus.replace('-', ' ')}
-              <X 
-                className="w-3 h-3 cursor-pointer hover:text-destructive" 
+              <X
+                className="w-3 h-3 cursor-pointer hover:text-destructive"
                 onClick={() => handleStatusChange('all')}
               />
             </Badge>
           )}
-          
+
           {currentTechnology && (
             <Badge variant="secondary" className="gap-2">
-              Tech: {technologies.find(t => t.slug === currentTechnology)?.name}
-              <X 
-                className="w-3 h-3 cursor-pointer hover:text-destructive" 
+              Tech: {technologies.find((t) => t.slug === currentTechnology)?.name}
+              <X
+                className="w-3 h-3 cursor-pointer hover:text-destructive"
                 onClick={() => handleTechnologyChange('all')}
               />
             </Badge>
           )}
-          
+
           {currentCategory && (
             <Badge variant="secondary" className="gap-2">
-              Category: {categories.find(c => c.slug === currentCategory)?.name}
-              <X 
-                className="w-3 h-3 cursor-pointer hover:text-destructive" 
+              Category: {categories.find((c) => c.slug === currentCategory)?.name}
+              <X
+                className="w-3 h-3 cursor-pointer hover:text-destructive"
                 onClick={() => handleCategoryChange('all')}
               />
             </Badge>
@@ -238,20 +262,27 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
       {/* Quick Technology Filter Buttons */}
       {technologies.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-muted-foreground">Quick Filters by Technology:</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">
+            Quick Filters by Technology:
+          </h4>
           <div className="flex flex-wrap gap-2">
             {technologies
-              .filter(tech => tech.slug && tech.slug.trim() !== '') // Filter out empty slugs
-              .slice(0, 8).map((tech) => ( // Show top 8 technologies
-              <TechnologyBadge
-                key={tech.id}
-                technology={tech}
-                size="sm"
-                variant={currentTechnology === tech.slug ? 'default' : 'outline'}
-                onClick={() => handleTechnologyChange(tech.slug)}
-                className="cursor-pointer hover:scale-105 transition-transform"
-              />
-            ))}
+              .filter((tech) => tech.slug && tech.slug.trim() !== '') // Filter out empty slugs
+              .slice(0, 8)
+              .map(
+                (
+                  tech, // Show top 8 technologies
+                ) => (
+                  <TechnologyBadge
+                    key={tech.id}
+                    technology={tech}
+                    size="sm"
+                    variant={currentTechnology === tech.slug ? 'default' : 'outline'}
+                    onClick={() => handleTechnologyChange(tech.slug || '')}
+                    className="cursor-pointer hover:scale-105 transition-transform"
+                  />
+                ),
+              )}
           </div>
         </div>
       )}

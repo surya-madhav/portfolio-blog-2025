@@ -1,20 +1,17 @@
-import type { Metadata } from 'next/types'
-import React from 'react'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { notFound } from 'next/navigation'
-
-import { ProjectsArchive } from '@/components/ProjectCard'
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
-import { PageHeader } from '@/components/patterns'
-import { EmptyState } from '@/components/patterns'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, Folder } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
-import type { ProjectCategory } from '@/payload-types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/patterns/empty-state'
+import { PageRange } from '@/components/PageRange'
+import { Pagination } from '@/components/Pagination'
+import { ProjectArchiveBlock } from '@/blocks/ProjectArchive/Component'
+import type { Technology, ProjectCategory } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
@@ -45,132 +42,131 @@ interface Props {
 
 export default async function CategoryProjectsPage({ params, searchParams }: Props) {
   const { slug } = await params
-  const resolvedSearchParams = await searchParams
+  const { page = '1', sort = 'newest' } = await searchParams
+  const currentPage = parseInt(page, 10)
+  const limit = 12
+
   const payload = await getPayload({ config: configPromise })
 
-  const page = parseInt(resolvedSearchParams.page || '1', 10)
-  const limit = 12
-  const sort = resolvedSearchParams.sort || 'newest'
-
   try {
-    // Find the category first
+    // Fetch the category
     const categoryResult = await payload.find({
       collection: 'project-categories',
-      where: {
-        slug: { equals: slug }
-      },
+      where: { slug: { equals: slug } },
       limit: 1,
-      depth: 1,
     })
 
     const category = categoryResult.docs[0]
+
     if (!category) {
-      return notFound()
+      notFound()
     }
 
-    // Build sort clause
-    const sortClause = sort === 'oldest' ? 'createdAt' : 
-                      sort === 'title' ? 'title' :
-                      sort === 'featured' ? ['-featured', '-updatedAt'] :
-                      '-updatedAt'
+    // Build sort query
+    let sortQuery: string
+    switch (sort) {
+      case 'oldest':
+        sortQuery = 'createdAt'
+        break
+      case 'title':
+        sortQuery = 'title'
+        break
+      case 'featured':
+        sortQuery = '-featured,-createdAt'
+        break
+      default:
+        sortQuery = '-createdAt'
+    }
 
-    // Find projects in this category
+    // Fetch projects in this category
     const projectsResult = await payload.find({
       collection: 'projects',
       where: {
-        _status: { equals: 'published' },
-        'categories.slug': { equals: slug }
+        and: [
+          {
+            categories: {
+              in: [category.id],
+            },
+          },
+          {
+            _status: {
+              equals: 'published',
+            },
+          },
+        ],
       },
-      sort: sortClause,
+      sort: sortQuery,
+      page: currentPage,
       limit,
-      page,
       depth: 2,
-      overrideAccess: false,
     })
 
-    // Get related categories (categories used in the same projects)
-    const relatedCategorySlugs = new Set<string>()
-    projectsResult.docs.forEach(project => {
-      if (project.categories && Array.isArray(project.categories)) {
-        project.categories.forEach(cat => {
-          if (typeof cat === 'object' && cat.slug && cat.slug !== slug) {
-            relatedCategorySlugs.add(cat.slug)
-          }
-        })
-      }
-    })
-
-    // Fetch related categories
-    const relatedCategories = relatedCategorySlugs.size > 0 ? await payload.find({
+    // Fetch related categories (other categories that have projects)
+    const relatedCategories = await payload.find({
       collection: 'project-categories',
       where: {
-        slug: { in: Array.from(relatedCategorySlugs) }
+        and: [
+          {
+            id: {
+              not_equals: category.id,
+            },
+          },
+        ],
       },
-      limit: 8,
-      sort: 'name',
-    }) : { docs: [] }
-
-    // Get all categories for navigation
-    const allCategories = await payload.find({
-      collection: 'project-categories',
-      limit: 50,
-      sort: 'name',
+      limit: 6,
     })
 
     return (
-      <div className="py-24">
-        {/* Back Navigation */}
-        <div className="container mb-6">
-          <Button asChild variant="ghost" className="gap-2">
-            <Link href="/projects">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Projects
-            </Link>
-          </Button>
-        </div>
+      <div className="min-h-screen">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-br from-background to-muted/50 py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="flex items-center justify-center gap-3 mb-6">
+                {category.icon &&
+                  typeof category.icon === 'object' &&
+                  category.icon !== null &&
+                  'url' in category.icon && (
+                    <Image
+                      src={category.icon.url || ''}
+                      alt={`${category.name} icon`}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12"
+                    />
+                  )}
+                <h1 className="text-4xl font-bold">{category.name} Projects</h1>
+              </div>
 
-        {/* Page Header */}
-        <div className="container mb-16">
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-                {category.icon && typeof category.icon !== 'string' ? (
-                  <img 
-                    src={category.icon.url} 
-                    alt={`${category.name} icon`}
-                    className="w-8 h-8"
-                  />
-                ) : (
-                  <Folder className="w-8 h-8 text-primary" />
-                )}
+              {category.description && (
+                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  {category.description}
+                </p>
+              )}
+
+              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                <span>{projectsResult.totalDocs || 0} projects</span>
+                <span>•</span>
+                <span>
+                  Page {currentPage} of {projectsResult.totalPages || 1}
+                </span>
               </div>
             </div>
-            <div className="flex-1">
-              <PageHeader
-                title={`${category.name} Projects`}
-                description={
-                  category.description ? 
-                    `${category.description} • Showing ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}` :
-                    `Projects in the ${category.name} category • ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}`
-                }
-              />
-            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Category Navigation */}
-        {allCategories.docs.length > 1 && (
-          <div className="container mb-12">
+        {/* Category Filter */}
+        {relatedCategories.docs.length > 0 && (
+          <div className="container py-8 border-b border-border">
             <div className="max-w-4xl mx-auto">
-              <h3 className="text-lg font-semibold mb-4">Browse by Category</h3>
-              <div className="flex flex-wrap gap-3">
-                {allCategories.docs.map((cat) => (
+              <div className="flex flex-wrap justify-center gap-3">
+                {relatedCategories.docs.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/projects/category/${cat.slug}`}
                     className="hover:scale-105 transition-transform"
                   >
-                    <Badge 
+                    <Badge
                       variant={cat.slug === slug ? 'default' : 'outline'}
                       className="gap-2 py-2 px-4 text-sm"
                       style={{
@@ -179,13 +175,18 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
                         color: cat.slug !== slug && cat.color ? cat.color : undefined,
                       }}
                     >
-                      {cat.icon && typeof cat.icon !== 'string' && (
-                        <img 
-                          src={cat.icon.url} 
-                          alt={`${cat.name} icon`}
-                          className="w-4 h-4"
-                        />
-                      )}
+                      {cat.icon &&
+                        typeof cat.icon === 'object' &&
+                        cat.icon !== null &&
+                        'url' in cat.icon && (
+                          <Image
+                            src={cat.icon.url || ''}
+                            alt={`${cat.name} icon`}
+                            width={16}
+                            height={16}
+                            className="w-4 h-4"
+                          />
+                        )}
                       {cat.name}
                     </Badge>
                   </Link>
@@ -199,12 +200,15 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
         <div className="container mb-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <PageRange
-              collection="projects"
-              currentPage={projectsResult.page}
+              collectionLabels={{
+                plural: 'Projects',
+                singular: 'Project',
+              }}
+              currentPage={projectsResult.page || 1}
               limit={limit}
-              totalDocs={projectsResult.totalDocs}
+              totalDocs={projectsResult.totalDocs || 0}
             />
-            
+
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Sort by:</span>
               <div className="flex gap-2">
@@ -234,15 +238,32 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
         {projectsResult.docs.length > 0 ? (
           <>
             <section className="container mb-12">
-              <ProjectsArchive projects={projectsResult.docs} />
+              <ProjectArchiveBlock
+                populateBy="selection"
+                selectedDocs={projectsResult.docs.map((project) => ({
+                  ...project,
+                  technologies:
+                    project.technologies?.filter(
+                      (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+                    ) || [],
+                  categories:
+                    project.categories?.filter(
+                      (cat): cat is ProjectCategory => typeof cat === 'object' && cat !== null,
+                    ) || [],
+                }))}
+                displayStyle="grid"
+                showFilters={false}
+                showPagination={false}
+                blockType="projectArchive"
+              />
             </section>
 
             {/* Pagination */}
-            {projectsResult.totalPages > 1 && (
-              <div className="container mb-12">
-                <Pagination 
-                  page={projectsResult.page} 
-                  totalPages={projectsResult.totalPages} 
+            {projectsResult.totalPages && projectsResult.totalPages > 1 && (
+              <div className="container mt-16">
+                <Pagination
+                  page={projectsResult.page || 1}
+                  totalPages={projectsResult.totalPages}
                 />
               </div>
             )}
@@ -251,10 +272,10 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
           <div className="container mb-12">
             <EmptyState
               title="No projects found"
-              description={`No projects have been categorized as ${category.name} yet.`}
+              description={`No projects found in the ${category.name} category.`}
               action={{
-                label: "View All Projects",
-                href: "/projects"
+                label: 'Browse All Projects',
+                href: '/projects',
               }}
             />
           </div>
@@ -268,7 +289,7 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
               <p className="text-muted-foreground mb-8">
                 Other categories frequently found alongside {category.name} projects
               </p>
-              
+
               <div className="flex flex-wrap justify-center gap-3">
                 {relatedCategories.docs.map((relatedCat) => (
                   <Link
@@ -276,7 +297,7 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
                     href={`/projects/category/${relatedCat.slug}`}
                     className="hover:scale-105 transition-transform"
                   >
-                    <Badge 
+                    <Badge
                       variant="outline"
                       className="gap-2 py-2 px-4"
                       style={{
@@ -284,13 +305,18 @@ export default async function CategoryProjectsPage({ params, searchParams }: Pro
                         color: relatedCat.color || undefined,
                       }}
                     >
-                      {relatedCat.icon && typeof relatedCat.icon !== 'string' && (
-                        <img 
-                          src={relatedCat.icon.url} 
-                          alt={`${relatedCat.name} icon`}
-                          className="w-4 h-4"
-                        />
-                      )}
+                      {relatedCat.icon &&
+                        typeof relatedCat.icon === 'object' &&
+                        relatedCat.icon !== null &&
+                        'url' in relatedCat.icon && (
+                          <Image
+                            src={relatedCat.icon.url || ''}
+                            alt={`${relatedCat.name} icon`}
+                            width={16}
+                            height={16}
+                            className="w-4 h-4"
+                          />
+                        )}
                       {relatedCat.name}
                     </Badge>
                   </Link>

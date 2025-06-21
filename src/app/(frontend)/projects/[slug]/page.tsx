@@ -1,20 +1,17 @@
 import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
-import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
-import type { Project } from '@/payload-types'
-import { generateMeta } from '@/utilities/generateMeta'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { RenderBlocks } from '@/blocks/RenderBlocks'
 
 // Project components to be implemented
 import { ProjectHero } from './components/ProjectHero'
 import { ProjectContent } from './components/ProjectContent'
 import { RelatedProjects } from './components/RelatedProjects'
+import type { Media } from '@/payload-types'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -79,31 +76,43 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     }
   }
 
+  // Helper function to get image URL safely
+  const getImageUrl = (image: Media | number | null | undefined): string => {
+    if (typeof image === 'object' && image !== null && 'url' in image) {
+      return image.url || ''
+    }
+    return ''
+  }
+
+  const metaImageUrl = getImageUrl(project.meta?.image)
+  const heroImageUrl = getImageUrl(project.heroImage)
+  const imageUrl = metaImageUrl || heroImageUrl
+
   return {
     title: project.meta?.title || `${project.title} | Projects`,
     description: project.meta?.description || project.description,
     openGraph: {
       title: project.meta?.title || project.title,
       description: project.meta?.description || project.description,
-      images: project.meta?.image || project.heroImage ? [
-        {
-          url: (project.meta?.image as any)?.url || (project.heroImage as any)?.url,
-          width: 1200,
-          height: 630,
-          alt: project.title,
-        }
-      ] : [],
+      images: imageUrl
+        ? [
+            {
+              url: imageUrl,
+              width: 1200,
+              height: 630,
+              alt: project.title,
+            },
+          ]
+        : [],
       type: 'article',
-      publishedTime: project.publishedAt,
-      modifiedTime: project.updatedAt,
+      publishedTime: project.publishedAt || undefined,
+      modifiedTime: project.updatedAt || undefined,
     },
     twitter: {
       card: 'summary_large_image',
       title: project.meta?.title || project.title,
       description: project.meta?.description || project.description,
-      images: project.meta?.image || project.heroImage ? [
-        (project.meta?.image as any)?.url || (project.heroImage as any)?.url
-      ] : [],
+      images: imageUrl ? [imageUrl] : [],
     },
   }
 }

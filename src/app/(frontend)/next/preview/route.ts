@@ -22,7 +22,7 @@ export async function GET(
   const path = searchParams.get('path')
   const collection = searchParams.get('collection') as CollectionSlug
   const slug = searchParams.get('slug')
-  const previewSecret = searchParams.get('previewSecret')
+  const _previewSecret = searchParams.get('previewSecret')
   // TODO: FIX THIS
   // if (previewSecret !== process.env.PREVIEW_SECRET) {
   //   return new Response('You are not allowed to preview this page', { status: 403 })

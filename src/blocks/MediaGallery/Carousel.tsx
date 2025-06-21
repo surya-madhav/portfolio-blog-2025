@@ -16,23 +16,19 @@ type CarouselProps = {
   className?: string
 }
 
-export const MediaGalleryCarousel: React.FC<CarouselProps> = ({ 
-  media, 
-  showCaptions, 
-  className 
+export const MediaGalleryCarousel: React.FC<CarouselProps> = ({
+  media,
+  showCaptions,
+  className,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? media.length - 1 : prevIndex - 1
-    )
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? media.length - 1 : prevIndex - 1))
   }
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === media.length - 1 ? 0 : prevIndex + 1
-    )
+    setCurrentIndex((prevIndex) => (prevIndex === media.length - 1 ? 0 : prevIndex + 1))
   }
 
   const goToSlide = (index: number) => {
@@ -43,6 +39,8 @@ export const MediaGalleryCarousel: React.FC<CarouselProps> = ({
 
   const currentItem = media[currentIndex]
 
+  if (!currentItem) return null
+
   return (
     <div className={['space-y-4', className].filter(Boolean).join(' ')}>
       {/* Main Carousel */}
@@ -52,7 +50,7 @@ export const MediaGalleryCarousel: React.FC<CarouselProps> = ({
           className="w-full h-full object-cover"
           alt={currentItem.alt}
         />
-        
+
         {/* Navigation Arrows */}
         {media.length > 1 && (
           <>
@@ -98,16 +96,12 @@ export const MediaGalleryCarousel: React.FC<CarouselProps> = ({
               key={item.id || index}
               onClick={() => goToSlide(index)}
               className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden transition-all ${
-                index === currentIndex 
-                  ? 'border-primary ring-2 ring-primary/20' 
+                index === currentIndex
+                  ? 'border-primary ring-2 ring-primary/20'
                   : 'border-border hover:border-primary/50'
               }`}
             >
-              <Media
-                resource={item.image}
-                className="w-full h-full object-cover"
-                alt={item.alt}
-              />
+              <Media resource={item.image} className="w-full h-full object-cover" alt={item.alt} />
             </button>
           ))}
         </div>

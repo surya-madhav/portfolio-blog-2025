@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ProjectCard } from '@/components/ProjectCard'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
-import type { Project } from '@/payload-types'
+import type { Project, Technology, ProjectCategory } from '@/payload-types'
 
 interface RelatedProjectsProps {
   project: Project
@@ -13,12 +13,13 @@ export const RelatedProjects: React.FC<RelatedProjectsProps> = ({ project }) => 
   const { relatedProjects } = project
 
   // Filter out invalid related projects and the current project
-  const validRelatedProjects = relatedProjects?.filter(
-    (relatedProject) => 
-      typeof relatedProject === 'object' && 
-      relatedProject !== null &&
-      relatedProject.id !== project.id
-  ) || []
+  const validRelatedProjects =
+    (relatedProjects?.filter(
+      (relatedProject) =>
+        typeof relatedProject === 'object' &&
+        relatedProject !== null &&
+        relatedProject.id !== project.id,
+    ) as Project[]) || []
 
   if (validRelatedProjects.length === 0) {
     return null
@@ -41,8 +42,18 @@ export const RelatedProjects: React.FC<RelatedProjectsProps> = ({ project }) => 
             {validRelatedProjects.slice(0, 3).map((relatedProject) => (
               <ProjectCard
                 key={relatedProject.id}
-                doc={relatedProject as any}
-                featured={relatedProject.featured}
+                doc={{
+                  ...relatedProject,
+                  technologies:
+                    relatedProject.technologies?.filter(
+                      (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+                    ) || [],
+                  categories:
+                    relatedProject.categories?.filter(
+                      (cat): cat is ProjectCategory => typeof cat === 'object' && cat !== null,
+                    ) || [],
+                }}
+                featured={relatedProject.featured || false}
                 className="h-full"
               />
             ))}

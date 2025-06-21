@@ -16,14 +16,16 @@ export const Code: React.FC<Props> = ({ code, language = '', filename, highlight
   // Parse highlighted lines
   const parseHighlightLines = (lines: string): number[] => {
     if (!lines) return []
-    
+
     const result: number[] = []
     const parts = lines.split(',')
-    
+
     for (const part of parts) {
       const trimmed = part.trim()
       if (trimmed.includes('-')) {
-        const [start, end] = trimmed.split('-').map(num => parseInt(num.trim()))
+        const [startStr, endStr] = trimmed.split('-')
+        const start = startStr ? parseInt(startStr.trim()) : NaN
+        const end = endStr ? parseInt(endStr.trim()) : NaN
         if (!isNaN(start) && !isNaN(end)) {
           for (let i = start; i <= end; i++) {
             result.push(i)
@@ -36,7 +38,7 @@ export const Code: React.FC<Props> = ({ code, language = '', filename, highlight
         }
       }
     }
-    
+
     return result
   }
 
@@ -51,16 +53,18 @@ export const Code: React.FC<Props> = ({ code, language = '', filename, highlight
       )}
       <Highlight code={code} language={language} theme={themes.vsDark}>
         {({ getLineProps, getTokenProps, tokens }) => (
-          <pre className={`bg-black p-4 border text-xs border-border overflow-x-auto ${filename ? 'rounded-b rounded-t-none' : 'rounded'}`}>
+          <pre
+            className={`bg-black p-4 border text-xs border-border overflow-x-auto ${filename ? 'rounded-b rounded-t-none' : 'rounded'}`}
+          >
             {tokens.map((line, i) => {
               const lineNumber = i + 1
               const isHighlighted = highlightedLines.includes(lineNumber)
               return (
-                <div 
-                  key={i} 
-                  {...getLineProps({ 
-                    className: `table-row ${isHighlighted ? 'bg-yellow-500/10 border-l-2 border-yellow-500' : ''}`, 
-                    line 
+                <div
+                  key={i}
+                  {...getLineProps({
+                    className: `table-row ${isHighlighted ? 'bg-yellow-500/10 border-l-2 border-yellow-500' : ''}`,
+                    line,
                   })}
                 >
                   <span className="table-cell select-none text-right text-white/25 pr-4">

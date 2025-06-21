@@ -13,7 +13,21 @@ export type ProjectHeroProps = {
     icon?: MediaType
     id?: string
   }[]
-  content?: any
+  content?: {
+    root: {
+      type: string
+      children: {
+        type: string
+        version: number
+        [k: string]: unknown
+      }[]
+      direction: ('ltr' | 'rtl') | null
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+      indent: number
+      version: number
+    }
+    [k: string]: unknown
+  } | null
   blockType: 'projectHero'
 }
 
@@ -21,38 +35,35 @@ type Props = ProjectHeroProps & {
   className?: string
 }
 
-export const ProjectHeroBlock: React.FC<Props> = ({ 
-  className, 
-  title, 
-  subtitle, 
-  backgroundImage, 
-  stats, 
-  content 
+export const ProjectHeroBlock: React.FC<Props> = ({
+  className,
+  title,
+  subtitle,
+  backgroundImage,
+  stats,
+  content,
 }) => {
   return (
     <div className={['relative', className].filter(Boolean).join(' ')}>
       {/* Background Image */}
       {backgroundImage && (
         <div className="absolute inset-0 z-0">
-          <Media
-            resource={backgroundImage}
-            className="w-full h-full object-cover"
-          />
+          <Media resource={backgroundImage} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50" />
         </div>
       )}
-      
+
       {/* Content */}
       <div className={`relative z-10 py-16 md:py-24 ${backgroundImage ? 'text-white' : ''}`}>
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             {/* Title and Subtitle */}
             <div className="mb-8">
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                {title}
-              </h1>
+              <h1 className="text-4xl md:text-6xl font-bold mb-4">{title}</h1>
               {subtitle && (
-                <p className={`text-xl md:text-2xl ${backgroundImage ? 'text-white/90' : 'text-muted-foreground'}`}>
+                <p
+                  className={`text-xl md:text-2xl ${backgroundImage ? 'text-white/90' : 'text-muted-foreground'}`}
+                >
                   {subtitle}
                 </p>
               )}
@@ -76,16 +87,13 @@ export const ProjectHeroBlock: React.FC<Props> = ({
                   <div key={stat.id || index} className="text-center">
                     {stat.icon && (
                       <div className="mb-3 flex justify-center">
-                        <Media
-                          resource={stat.icon}
-                          className="w-8 h-8"
-                        />
+                        <Media resource={stat.icon} className="w-8 h-8" />
                       </div>
                     )}
-                    <div className="text-3xl md:text-4xl font-bold mb-1">
-                      {stat.value}
-                    </div>
-                    <div className={`text-sm uppercase tracking-wide ${backgroundImage ? 'text-white/70' : 'text-muted-foreground'}`}>
+                    <div className="text-3xl md:text-4xl font-bold mb-1">{stat.value}</div>
+                    <div
+                      className={`text-sm uppercase tracking-wide ${backgroundImage ? 'text-white/70' : 'text-muted-foreground'}`}
+                    >
                       {stat.label}
                     </div>
                   </div>

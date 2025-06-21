@@ -1,20 +1,18 @@
-import type { Metadata } from 'next/types'
-import React from 'react'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { notFound } from 'next/navigation'
-
-import { ProjectsArchive } from '@/components/ProjectCard'
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
-import { PageHeader } from '@/components/patterns'
-import { EmptyState } from '@/components/patterns'
-import { TechnologyBadge } from '@/components/TechnologyBadge'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-import type { Technology } from '@/payload-types'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
+import { PageHeader } from '@/components/patterns/page-header'
+import { PageRange } from '@/components/PageRange'
+import { Pagination } from '@/components/Pagination'
+import { EmptyState } from '@/components/patterns/empty-state'
+import { TechnologyBadge } from '@/components/TechnologyBadge'
+import { ProjectArchiveBlock } from '@/blocks/ProjectArchive/Component'
+import type { Technology, ProjectCategory } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
@@ -45,70 +43,89 @@ interface Props {
 
 export default async function TechnologyProjectsPage({ params, searchParams }: Props) {
   const { slug } = await params
-  const resolvedSearchParams = await searchParams
+  const { page = '1', sort = 'newest' } = await searchParams
+  const currentPage = parseInt(page, 10)
+  const limit = 12
+
   const payload = await getPayload({ config: configPromise })
 
-  const page = parseInt(resolvedSearchParams.page || '1', 10)
-  const limit = 12
-  const sort = resolvedSearchParams.sort || 'newest'
-
   try {
-    // Find the technology first
+    // Fetch the technology
     const technologyResult = await payload.find({
       collection: 'technologies',
-      where: {
-        slug: { equals: slug }
-      },
+      where: { slug: { equals: slug } },
       limit: 1,
-      depth: 1,
     })
 
     const technology = technologyResult.docs[0]
+
     if (!technology) {
-      return notFound()
+      notFound()
     }
 
-    // Build sort clause
-    const sortClause = sort === 'oldest' ? 'createdAt' : 
-                      sort === 'title' ? 'title' :
-                      sort === 'featured' ? ['-featured', '-updatedAt'] :
-                      '-updatedAt'
+    // Build sort query
+    let sortQuery: string
+    switch (sort) {
+      case 'oldest':
+        sortQuery = 'createdAt'
+        break
+      case 'title':
+        sortQuery = 'title'
+        break
+      case 'featured':
+        sortQuery = '-featured,-createdAt'
+        break
+      default:
+        sortQuery = '-createdAt'
+    }
 
-    // Find projects using this technology
+    // Fetch projects using this technology
     const projectsResult = await payload.find({
       collection: 'projects',
       where: {
-        _status: { equals: 'published' },
-        'technologies.slug': { equals: slug }
+        and: [
+          {
+            technologies: {
+              in: [technology.id],
+            },
+          },
+          {
+            _status: {
+              equals: 'published',
+            },
+          },
+        ],
       },
-      sort: sortClause,
+      sort: sortQuery,
+      page: currentPage,
       limit,
-      page,
       depth: 2,
-      overrideAccess: false,
     })
 
-    // Get other related technologies (used in the same projects)
-    const relatedTechSlugs = new Set<string>()
-    projectsResult.docs.forEach(project => {
+    // Fetch related technologies (other technologies used in the same projects)
+    const relatedTechnologyIds = new Set<number>()
+    projectsResult.docs.forEach((project) => {
       if (project.technologies && Array.isArray(project.technologies)) {
-        project.technologies.forEach(tech => {
-          if (typeof tech === 'object' && tech.slug && tech.slug !== slug) {
-            relatedTechSlugs.add(tech.slug)
+        project.technologies.forEach((tech) => {
+          if (typeof tech === 'object' && tech !== null && tech.id && tech.id !== technology.id) {
+            relatedTechnologyIds.add(tech.id)
           }
         })
       }
     })
 
     // Fetch related technologies
-    const relatedTechnologies = relatedTechSlugs.size > 0 ? await payload.find({
-      collection: 'technologies',
-      where: {
-        slug: { in: Array.from(relatedTechSlugs) }
-      },
-      limit: 8,
-      sort: 'name',
-    }) : { docs: [] }
+    const relatedTechnologies =
+      relatedTechnologyIds.size > 0
+        ? await payload.find({
+            collection: 'technologies',
+            where: {
+              id: { in: Array.from(relatedTechnologyIds) },
+            },
+            limit: 8,
+            sort: 'name',
+          })
+        : { docs: [] }
 
     return (
       <div className="py-24">
@@ -126,7 +143,7 @@ export default async function TechnologyProjectsPage({ params, searchParams }: P
         <div className="container mb-16">
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
-              <TechnologyBadge 
+              <TechnologyBadge
                 technology={technology}
                 size="lg"
                 variant="default"
@@ -137,32 +154,24 @@ export default async function TechnologyProjectsPage({ params, searchParams }: P
               <PageHeader
                 title={`${technology.name} Projects`}
                 description={
-                  technology.description ? 
-                    `${technology.description} • Showing ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}` :
-                    `Projects built with ${technology.name} • ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}`
+                  technology.description
+                    ? `${technology.description} • Showing ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}`
+                    : `Projects built with ${technology.name} • ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}`
                 }
               />
-              
+
               {/* Technology Links */}
               <div className="flex flex-wrap gap-3 mt-6">
                 {technology.officialWebsite && (
                   <Button asChild variant="outline" size="sm">
-                    <a 
-                      href={technology.officialWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={technology.officialWebsite} target="_blank" rel="noopener noreferrer">
                       Official Website
                     </a>
                   </Button>
                 )}
                 {technology.documentation && (
                   <Button asChild variant="outline" size="sm">
-                    <a 
-                      href={technology.documentation}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={technology.documentation} target="_blank" rel="noopener noreferrer">
                       Documentation
                     </a>
                   </Button>
@@ -176,12 +185,15 @@ export default async function TechnologyProjectsPage({ params, searchParams }: P
         <div className="container mb-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <PageRange
-              collection="projects"
-              currentPage={projectsResult.page}
+              collectionLabels={{
+                plural: 'Projects',
+                singular: 'Project',
+              }}
+              currentPage={projectsResult.page || 1}
               limit={limit}
-              totalDocs={projectsResult.totalDocs}
+              totalDocs={projectsResult.totalDocs || 0}
             />
-            
+
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Sort by:</span>
               <div className="flex gap-2">
@@ -209,31 +221,43 @@ export default async function TechnologyProjectsPage({ params, searchParams }: P
 
         {/* Projects Display */}
         {projectsResult.docs.length > 0 ? (
-          <>
-            <section className="container mb-12">
-              <ProjectsArchive projects={projectsResult.docs} />
-            </section>
-
-            {/* Pagination */}
-            {projectsResult.totalPages > 1 && (
-              <div className="container mb-12">
-                <Pagination 
-                  page={projectsResult.page} 
-                  totalPages={projectsResult.totalPages} 
-                />
-              </div>
-            )}
-          </>
+          <section className="container mb-12">
+            <ProjectArchiveBlock
+              populateBy="selection"
+              selectedDocs={projectsResult.docs.map((project) => ({
+                ...project,
+                technologies:
+                  project.technologies?.filter(
+                    (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+                  ) || [],
+                categories:
+                  project.categories?.filter(
+                    (cat): cat is ProjectCategory => typeof cat === 'object' && cat !== null,
+                  ) || [],
+              }))}
+              displayStyle="grid"
+              showFilters={false}
+              showPagination={false}
+              blockType="projectArchive"
+            />
+          </section>
         ) : (
-          <div className="container mb-12">
+          <div className="container">
             <EmptyState
               title="No projects found"
-              description={`No projects have been built with ${technology.name} yet.`}
+              description={`No projects found using ${technology.name}.`}
               action={{
-                label: "View All Projects",
-                href: "/projects"
+                label: 'Browse All Projects',
+                href: '/projects',
               }}
             />
+          </div>
+        )}
+
+        {/* Pagination */}
+        {projectsResult.totalPages && projectsResult.totalPages > 1 && (
+          <div className="container mt-16">
+            <Pagination page={projectsResult.page || 1} totalPages={projectsResult.totalPages} />
           </div>
         )}
 
@@ -245,7 +269,7 @@ export default async function TechnologyProjectsPage({ params, searchParams }: P
               <p className="text-muted-foreground mb-8">
                 Other technologies frequently used alongside {technology.name}
               </p>
-              
+
               <div className="flex flex-wrap justify-center gap-3">
                 {relatedTechnologies.docs.map((relatedTech) => (
                   <Link
@@ -253,11 +277,7 @@ export default async function TechnologyProjectsPage({ params, searchParams }: P
                     href={`/projects/technology/${relatedTech.slug}`}
                     className="hover:scale-105 transition-transform"
                   >
-                    <TechnologyBadge 
-                      technology={relatedTech}
-                      size="md"
-                      variant="outline"
-                    />
+                    <TechnologyBadge technology={relatedTech} size="md" variant="outline" />
                   </Link>
                 ))}
               </div>

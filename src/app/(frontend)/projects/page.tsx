@@ -1,20 +1,14 @@
-import type { Metadata } from 'next/types'
-import React from 'react'
+import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { notFound } from 'next/navigation'
 
-import { ProjectsArchive } from '@/components/ProjectCard'
-import { ProjectFilter } from '@/components/ProjectFilter'
+import { PageHeader } from '@/components/patterns/page-header'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
-import { PageHeader } from '@/components/patterns'
-import { EmptyState } from '@/components/patterns'
-
-import type { Project, Technology, ProjectCategory } from '@/payload-types'
-
-export const dynamic = 'force-dynamic'
-export const revalidate = 600
+import { EmptyState } from '@/components/patterns/empty-state'
+import { ProjectFilter } from '@/components/ProjectFilter'
+import { ProjectArchiveBlock } from '@/blocks/ProjectArchive/Component'
+import type { Technology, ProjectCategory } from '@/payload-types'
 
 interface SearchParams {
   search?: string
@@ -29,10 +23,19 @@ interface Props {
   searchParams: Promise<SearchParams>
 }
 
+// Type for Payload where clause
+type WhereClause = {
+  _status: { equals: 'published' }
+  or?: Array<{ [key: string]: { contains: string } }>
+  projectStatus?: { equals: string }
+  'technologies.slug'?: { equals: string }
+  'categories.slug'?: { equals: string }
+}
+
 // Helper function to build where clause
-function buildWhereClause(params: SearchParams) {
-  const where: any = {
-    _status: { equals: 'published' }
+function buildWhereClause(params: SearchParams): WhereClause {
+  const where: WhereClause = {
+    _status: { equals: 'published' },
   }
 
   // Search in title, description, and tags
@@ -114,26 +117,31 @@ export default async function ProjectsPage({ searchParams }: Props) {
         sort: 'name',
         depth: 0,
         where: {
-          slug: { not_equals: '' }, // Exclude empty slugs  
+          slug: { not_equals: '' }, // Exclude empty slugs
         },
       }),
     ])
 
     // Separate featured and regular projects
-    const featuredProjects = projectsResult.docs.filter(project => project.featured)
-    const regularProjects = projectsResult.docs.filter(project => !project.featured)
+    const featuredProjects = projectsResult.docs.filter((project) => project.featured)
+    const regularProjects = projectsResult.docs.filter((project) => !project.featured)
 
     // Get filter summary
-    const hasFilters = !!(resolvedParams.search || resolvedParams.status || resolvedParams.technology || resolvedParams.category)
+    const hasFilters = !!(
+      resolvedParams.search ||
+      resolvedParams.status ||
+      resolvedParams.technology ||
+      resolvedParams.category
+    )
     const filterSummary = []
     if (resolvedParams.search) filterSummary.push(`search: "${resolvedParams.search}"`)
     if (resolvedParams.status) filterSummary.push(`status: ${resolvedParams.status}`)
     if (resolvedParams.technology) {
-      const tech = technologiesResult.docs.find(t => t.slug === resolvedParams.technology)
+      const tech = technologiesResult.docs.find((t) => t.slug === resolvedParams.technology)
       if (tech) filterSummary.push(`technology: ${tech.name}`)
     }
     if (resolvedParams.category) {
-      const cat = categoriesResult.docs.find(c => c.slug === resolvedParams.category)
+      const cat = categoriesResult.docs.find((c) => c.slug === resolvedParams.category)
       if (cat) filterSummary.push(`category: ${cat.name}`)
     }
 
@@ -144,7 +152,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
           <PageHeader
             title="Projects"
             description={
-              hasFilters 
+              hasFilters
                 ? `Showing ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'} for ${filterSummary.join(', ')}`
                 : `Explore my portfolio of ${projectsResult.totalDocs} project${projectsResult.totalDocs === 1 ? '' : 's'}`
             }
@@ -162,10 +170,13 @@ export default async function ProjectsPage({ searchParams }: Props) {
         {/* Results Count and Pagination Info */}
         <div className="container mb-8">
           <PageRange
-            collection="projects"
-            currentPage={projectsResult.page}
+            collectionLabels={{
+              plural: 'Projects',
+              singular: 'Project',
+            }}
+            currentPage={projectsResult.page || 1}
             limit={limit}
-            totalDocs={projectsResult.totalDocs}
+            totalDocs={projectsResult.totalDocs || 0}
           />
         </div>
 
@@ -179,7 +190,24 @@ export default async function ProjectsPage({ searchParams }: Props) {
                   <h2 className="text-2xl font-semibold mb-2">Featured Projects</h2>
                   <p className="text-muted-foreground">Highlighted projects showcasing key work</p>
                 </div>
-                <ProjectsArchive projects={featuredProjects} />
+                <ProjectArchiveBlock
+                  populateBy="selection"
+                  selectedDocs={featuredProjects.map((project) => ({
+                    ...project,
+                    technologies:
+                      project.technologies?.filter(
+                        (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+                      ) || [],
+                    categories:
+                      project.categories?.filter(
+                        (cat): cat is ProjectCategory => typeof cat === 'object' && cat !== null,
+                      ) || [],
+                  }))}
+                  displayStyle="grid"
+                  showFilters={false}
+                  showPagination={false}
+                  blockType="projectArchive"
+                />
               </section>
             )}
 
@@ -191,26 +219,42 @@ export default async function ProjectsPage({ searchParams }: Props) {
                   <p className="text-muted-foreground">Complete portfolio collection</p>
                 </div>
               )}
-              <ProjectsArchive 
-                projects={hasFilters ? projectsResult.docs : regularProjects} 
+              <ProjectArchiveBlock
+                populateBy="selection"
+                selectedDocs={(hasFilters ? projectsResult.docs : regularProjects).map(
+                  (project) => ({
+                    ...project,
+                    technologies:
+                      project.technologies?.filter(
+                        (tech): tech is Technology => typeof tech === 'object' && tech !== null,
+                      ) || [],
+                    categories:
+                      project.categories?.filter(
+                        (cat): cat is ProjectCategory => typeof cat === 'object' && cat !== null,
+                      ) || [],
+                  }),
+                )}
+                displayStyle="grid"
+                showFilters={false}
+                showPagination={false}
+                blockType="projectArchive"
               />
             </section>
           </>
         ) : (
-          /* Empty State */
-          <div className="container">
+          <div className="container mb-12">
             <EmptyState
               title="No projects found"
               description={
-                hasFilters 
-                  ? "No projects match your current filters. Try adjusting your search criteria."
-                  : "No projects have been published yet."
+                hasFilters
+                  ? 'No projects match your current filters. Try adjusting your search criteria.'
+                  : 'No projects are currently available.'
               }
               action={
-                hasFilters 
+                hasFilters
                   ? {
-                      label: "Clear Filters",
-                      href: "/projects"
+                      label: 'Clear Filters',
+                      href: '/projects',
                     }
                   : undefined
               }
@@ -219,29 +263,41 @@ export default async function ProjectsPage({ searchParams }: Props) {
         )}
 
         {/* Pagination */}
-        {projectsResult.totalPages > 1 && (
-          <div className="container">
-            <Pagination 
-              page={projectsResult.page} 
-              totalPages={projectsResult.totalPages} 
-            />
+        {projectsResult.totalPages && projectsResult.totalPages > 1 && (
+          <div className="container mt-16">
+            <Pagination page={projectsResult.page || 1} totalPages={projectsResult.totalPages} />
           </div>
         )}
       </div>
     )
   } catch (error) {
     console.error('Error fetching projects:', error)
-    return notFound()
+    return (
+      <div className="py-24">
+        <div className="container">
+          <EmptyState
+            title="Error loading projects"
+            description="There was an error loading the projects. Please try again later."
+            action={{
+              label: 'Try Again',
+              href: '/projects',
+            }}
+          />
+        </div>
+      </div>
+    )
   }
 }
 
 export function generateMetadata(): Metadata {
   return {
     title: 'Projects | Portfolio',
-    description: 'Explore my portfolio of web applications, mobile apps, and development projects.',
+    description:
+      'Explore my portfolio of projects showcasing web development, mobile apps, and technical solutions.',
     openGraph: {
       title: 'Projects | Portfolio',
-      description: 'Explore my portfolio of web applications, mobile apps, and development projects.',
+      description:
+        'Explore my portfolio of projects showcasing web development, mobile apps, and technical solutions.',
       type: 'website',
     },
   }

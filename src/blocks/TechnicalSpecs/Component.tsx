@@ -4,13 +4,41 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 export type TechnicalSpecsProps = {
-  architecture?: any
+  architecture?: {
+    root: {
+      type: string
+      children: {
+        type: string
+        version: number
+        [k: string]: unknown
+      }[]
+      direction: ('ltr' | 'rtl') | null
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+      indent: number
+      version: number
+    }
+    [k: string]: unknown
+  } | null
   requirements?: {
     category: 'system' | 'software' | 'hardware' | 'network' | 'security' | 'performance'
     requirement: string
     id?: string
   }[]
-  deployment?: any
+  deployment?: {
+    root: {
+      type: string
+      children: {
+        type: string
+        version: number
+        [k: string]: unknown
+      }[]
+      direction: ('ltr' | 'rtl') | null
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+      indent: number
+      version: number
+    }
+    [k: string]: unknown
+  } | null
   performance?: {
     loadTime?: string
     throughput?: string
