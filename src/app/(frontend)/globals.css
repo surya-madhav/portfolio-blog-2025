@@ -206,6 +206,40 @@
   .gradient-text {
     @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
+  
+  /* Mermaid diagram styling */
+  .mermaid-container {
+    /* Ensure proper spacing and responsive design */
+    @apply my-6;
+  }
+  
+  .mermaid-diagram svg {
+    /* Ensure diagrams scale properly */
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Override Mermaid text styling to use design system fonts */
+  .mermaid-diagram .node text,
+  .mermaid-diagram .edge text,
+  .mermaid-diagram .label text,
+  .mermaid-diagram .cluster text {
+    font-family: 'Space Grotesk', system-ui, sans-serif !important;
+    font-size: 14px !important;
+  }
+  
+  /* Ensure proper text contrast in diagrams */
+  [data-theme='dark'] .mermaid-diagram .node text,
+  [data-theme='dark'] .mermaid-diagram .edge text,
+  [data-theme='dark'] .mermaid-diagram .label text {
+    fill: #FEFEFE !important; /* Paper White */
+  }
+  
+  [data-theme='light'] .mermaid-diagram .node text,
+  [data-theme='light'] .mermaid-diagram .edge text,
+  [data-theme='light'] .mermaid-diagram .label text {
+    fill: #0A0F0F !important; /* Offblack */
+  }
 }
 
 @layer utilities {
@@ -241,4 +275,36 @@ html {
 html[data-theme='dark'],
 html[data-theme='light'] {
   opacity: initial;
+}
+
+/* Keyframes for animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
