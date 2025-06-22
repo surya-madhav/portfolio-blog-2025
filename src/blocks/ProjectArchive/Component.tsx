@@ -1,6 +1,6 @@
 import React from 'react'
 import { ProjectArchiveClient } from './Component.client'
-import type { Project, ProjectCategory, Technology } from '@/payload-types'
+import type { Project } from '@/payload-types'
 
 export type ProjectArchiveProps = {
   introContent?: {

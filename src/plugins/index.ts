@@ -18,7 +18,7 @@ const generateTitle: GenerateTitle<Post | Page | Project> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
 }
 
-const generateURL: GenerateURL<Post | Page | Project> = ({ doc, req }) => {
+const generateURL: GenerateURL<Post | Page | Project> = ({ doc, req: _req }) => {
   const url = getServerSideURL()
 
   if (!doc?.slug) return url
