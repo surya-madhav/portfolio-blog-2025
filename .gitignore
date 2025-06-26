@@ -32,9 +32,6 @@ node_modules/
 *.sln
 *.sw?
 # OS specific
-# Task files
-tasks.json
-tasks/ 
 .cursor/*
 .taskmaster/*
 .windsurfrules
@@ -43,3 +40,7 @@ tasks/
 docs/data/
 docs/*
 .env.development.local
+
+# Task files
+# tasks.json
+# tasks/ 
