@@ -42,3 +42,4 @@ tasks/
 .roomodes
 docs/data/
 docs/*
+.env.development.local
