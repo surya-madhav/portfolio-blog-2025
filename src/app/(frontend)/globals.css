@@ -202,9 +202,50 @@
     @apply backdrop-blur-md bg-background/80 border border-border/50;
   }
   
+  /* Enhanced glass morphism with better performance */
+  .glass-enhanced {
+    @apply backdrop-blur-lg bg-background/30 border border-border/40;
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  }
+  
   /* Gradient text */
   .gradient-text {
     @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+  
+  /* Hero gradient background */
+  .hero-gradient-background {
+    background: linear-gradient(
+      135deg,
+      #091717 0%,
+      #13343B 25%,
+      #2E565E 50%,
+      #20808D 75%,
+      #1FB8CD 100%
+    );
+    
+    /* Add some texture with a subtle pattern overlay */
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(32, 128, 141, 0.1) 0%, transparent 50%);
+  }
+  
+  [data-theme='light'] .hero-gradient-background {
+    background: linear-gradient(
+      135deg,
+      #FBFAF4 0%,
+      #EAEEEF 25%,
+      #D5DDD9 50%,
+      #96AAAE 75%,
+      #BADEDD 100%
+    );
+    
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(32, 128, 141, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(31, 184, 205, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(46, 86, 94, 0.08) 0%, transparent 50%);
   }
   
   /* Mermaid diagram styling */
@@ -306,5 +347,28 @@ html[data-theme='light'] {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* Shimmer animation for glassmorphism effects */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* Responsive shimmer adjustments */
+@media (max-width: 768px) {
+  .shimmer-gradient {
+    animation-duration: 4s !important; /* Slower on mobile for better performance */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-gradient {
+    animation: none !important;
   }
 }

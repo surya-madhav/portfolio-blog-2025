@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
-          <main className="pt-16">{children}</main>
+          <main>{children}</main>
           <Footer />
           <Toaster />
         </Providers>

@@ -1,0 +1,35 @@
+/* CSS Gradient Fallback for Hero Background
+   This can be used until a proper hero-background.jpg is added */
+
+.hero-gradient-background {
+  background: linear-gradient(
+    135deg,
+    #091717 0%,
+    #13343B 25%,
+    #2E565E 50%,
+    #20808D 75%,
+    #1FB8CD 100%
+  );
+  
+  /* Add some texture with a subtle pattern overlay */
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(32, 128, 141, 0.1) 0%, transparent 50%);
+}
+
+[data-theme='light'] .hero-gradient-background {
+  background: linear-gradient(
+    135deg,
+    #FBFAF4 0%,
+    #EAEEEF 25%,
+    #D5DDD9 50%,
+    #96AAAE 75%,
+    #BADEDD 100%
+  );
+  
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(32, 128, 141, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(31, 184, 205, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(46, 86, 94, 0.08) 0%, transparent 50%);
+}

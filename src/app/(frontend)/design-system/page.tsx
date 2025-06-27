@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { DotPatternWrapper } from "@/components/ui/patterns/dot-pattern-wrapper"
 
 // Component sections - will be implemented
 import { ColorPalette } from "./components/color-palette"
@@ -14,12 +15,9 @@ import { CheatSheet } from "./components/cheat-sheet"
 
 export default function DesignSystemPage() {
   return (
-    <div className="h-full overflow-hidden flex flex-col">
-      {/* Background grid pattern */}
-      <div className="fixed inset-0 grid-pattern opacity-[0.02] z-[-1]" />
-      
+    <DotPatternWrapper intensity="low" className="h-full overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-20">
         <div className="container flex h-16 items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">Design System</h1>
@@ -30,7 +28,7 @@ export default function DesignSystemPage() {
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto relative z-20">
         <div className="container px-4 py-8 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -86,6 +84,6 @@ export default function DesignSystemPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </DotPatternWrapper>
   )
 }

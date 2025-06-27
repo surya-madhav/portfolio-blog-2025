@@ -1,75 +1,118 @@
 'use client'
 
-import React from 'react'
-import Spline from '@splinetool/react-spline'
+import React, { useEffect, useState, useRef } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/utilities/ui'
+import './hero-animations.css'
 
 import { ContactMeDialog } from './ContactMeDialog'
 import { DownloadButton } from './DownloadButton'
 
-// Dynamically import Spline to avoid SSR issues
-
 const HeroSection = () => {
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // Handle scroll for content animations
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!contentRef.current) return
+
+      const viewportHeight = window.innerHeight
+      const scrollY = window.scrollY
+
+      // Calculate scroll progress (0 to 1 over the viewport height)
+      const progress = Math.min(scrollY / (viewportHeight * 0.6), 1)
+      setScrollProgress(progress)
+    }
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (!prefersReducedMotion) {
+      window.addEventListener('scroll', handleScroll, { passive: true })
+      handleScroll() // Initial calculation
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   return (
-    <section id="about" className="container mx-auto py-4 px-4 pt-24">
-      <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
-        <div className="col-span-7 flex flex-col space-y-4">
-          <h1 className="text-4xl font-bold leading-tight text-foreground">
-            Hello, I&apos;m
-            <br />
-            <span className="gradient-text">Sai Surya Rebbapragada</span>
+    <div id="about" className="h-full flex items-center justify-center px-2 sm:px-4 lg:px-8">
+      <div
+        ref={contentRef}
+        className={cn(
+          'w-full max-w-4xl mx-auto text-center space-y-6 sm:space-y-8 hero-content hero-text-shadow transform-gpu',
+        )}
+        style={{
+          opacity: Math.max(1 - scrollProgress * 1.2, 0),
+          transform: `translateY(${scrollProgress * 50}px) scale(${1 - scrollProgress * 0.1})`,
+        }}
+      >
+        {/* Main heading using design system typography */}
+        <div className="space-y-4">
+          <h1 className="text-h2 md:text-h1 lg:text-display font-bold leading-tight">
+            {/* <span className="block text-foreground/90">Hello, I'm</span> */}
+            <span className="block mt-2 text-transparent text-perplexity-apricot ">
+              Sai Surya Rebbapragada
+            </span>
           </h1>
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-block border border-primary px-3 py-1 rounded-full text-sm font-medium">
-              Data Systems Engineer
-            </span>
-            <span className="inline-block border border-primary px-3 py-1 rounded-full text-sm font-medium">
-              Full-Stack Developer
-            </span>
-            <span className="inline-block border border-primary px-3 py-1 rounded-full text-sm font-medium">
-              Distributed Systems Architect
-            </span>
-            <span className="inline-block border border-primary px-3 py-1 rounded-full text-sm font-medium">
-              Generative AI Engineer
-            </span>
-            <span className="inline-block border border-primary px-3 py-1 rounded-full text-sm font-medium">
-              DevOps & MLOps Specialist
-            </span>
-          </div>
-          <p className="text-lg text-muted-foreground max-w-xl">
-            I design and implement high-performance data pipelines and scalable architectures
-            processing millions of events daily. Skilled in Airflow, Snowflake, DBT, AWS, GCP, and
-            modern web technologies (React, Next.js, Node.js). Passionate about Generative AI and
-            delivering production-grade solutions. Seeking new opportunities to drive innovation and
-            impact.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <ContactMeDialog />
-            <DownloadButton />
+        </div>
+
+        {/* Role badges using Badge component */}
+        <div className="hero-badges flex flex-wrap justify-center gap-2 sm:gap-3 max-w-4xl mx-auto px-2">
+          <Badge
+            variant="outline"
+            className="bg-background/10 backdrop-blur-md border-border/20 text-foreground/90 text-xs sm:text-sm badge"
+          >
+            Data Systems Engineer
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-background/10 backdrop-blur-md border-border/20 text-foreground/90 text-xs sm:text-sm badge"
+          >
+            Full-Stack Developer
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-background/10 backdrop-blur-md border-border/20 text-foreground/90 text-xs sm:text-sm badge"
+          >
+            Distributed Systems Architect
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-background/10 backdrop-blur-md border-border/20 text-foreground/90 text-xs sm:text-sm badge"
+          >
+            Generative AI Engineer
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-background/10 backdrop-blur-md border-border/20 text-foreground/90 text-xs sm:text-sm badge"
+          >
+            DevOps & MLOps Specialist
+          </Badge>
+        </div>
+
+        {/* Description using design system typography and spacing */}
+        <div className="max-w-3xl mx-auto px-2">
+          <div className="hero-glass-content rounded-lg p-4 sm:p-6">
+            <p className="text-body md:text-h5 lg:text-h4 leading-relaxed text-foreground/90">
+              I design and implement high-performance data pipelines and scalable architectures
+              processing millions of events daily. Skilled in Airflow, Snowflake, DBT, AWS, GCP, and
+              modern web technologies (React, Next.js, Node.js). Passionate about Generative AI and
+              delivering production-grade solutions.
+            </p>
           </div>
         </div>
-        <div className="col-span-5 flex items-center justify-center mt-6 lg:mt-0">
-          {/* Interactive 3D Spline Scene */}
-          <div className="relative w-full max-w-lg h-96 lg:h-[500px]">
-            <div className="absolute inset-0 rounded-2xl overflow-hidden bg-background/5 backdrop-blur-sm border border-muted shadow-2xl">
-              <Spline
-                scene="https://prod.spline.design/ZFQi0Ry3lSZrD4HR/scene.splinecode"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '1rem',
-                }}
-                onLoad={() => {
-                  console.log('Spline scene loaded successfully')
-                }}
-                onError={(error) => {
-                  console.error('Error loading Spline scene:', error)
-                }}
-              />
-            </div>
-          </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <ContactMeDialog />
+          <DownloadButton />
         </div>
       </div>
-    </section>
+    </div>
   )
 }
 
