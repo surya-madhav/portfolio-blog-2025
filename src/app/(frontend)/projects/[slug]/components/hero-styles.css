@@ -1,0 +1,116 @@
+/* Project hero banner styles for enhanced performance */
+
+/* Optimize blur performance with hardware acceleration */
+.project-hero-banner {
+  will-change: transform, filter;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Smooth blur transitions */
+.project-hero-media {
+  transition: filter 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center center;
+}
+
+/* Firefox optimization for backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .project-hero-media {
+    filter: blur(0);
+  }
+  
+  .project-hero-media.blurred {
+    filter: blur(20px);
+  }
+}
+
+/* Reduce blur on low-power devices */
+@media (prefers-reduced-motion: reduce) {
+  .project-hero-media {
+    transition: none !important;
+  }
+  
+  .project-hero-banner {
+    will-change: auto;
+  }
+}
+
+/* Gradient overlays for better text readability */
+.hero-gradient-overlay {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(0, 0, 0, 0.6) 80%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+}
+
+/* Enhanced text shadows for better readability */
+.hero-content-overlay h1 {
+  text-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.8),
+    0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.hero-content-overlay p {
+  text-shadow: 
+    0 1px 6px rgba(0, 0, 0, 0.7),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content-overlay .badge {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Video specific styles */
+.hero-video-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-video-container video,
+.hero-video-container iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+
+/* Ensure proper stacking context */
+.hero-content-overlay {
+  position: relative;
+  z-index: 10;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .project-hero-banner {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  /* Reduce blur intensity on mobile for better performance */
+  .project-hero-media.blurred {
+    filter: blur(15px);
+  }
+}
+
+/* High DPI screen optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .project-hero-media {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}

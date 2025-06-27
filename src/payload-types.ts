@@ -436,11 +436,15 @@ export interface Project {
    */
   featured?: boolean | null;
   /**
-   * Main project image displayed in listings and project header
+   * Banner image or video for the project hero section. Supports both images and videos from the media collection.
+   */
+  heroMedia?: (number | null) | Media;
+  /**
+   * Legacy field - use heroMedia instead. Main project image displayed in listings and project header
    */
   heroImage?: (number | null) | Media;
   /**
-   * YouTube video ID for project demo (overrides hero image)
+   * Legacy field - use heroMedia instead. YouTube video ID for project demo
    */
   heroVideo?: string | null;
   links?: {
@@ -1789,6 +1793,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   description?: T;
   projectStatus?: T;
   featured?: T;
+  heroMedia?: T;
   heroImage?: T;
   heroVideo?: T;
   links?:

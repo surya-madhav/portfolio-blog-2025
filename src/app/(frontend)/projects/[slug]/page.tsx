@@ -7,8 +7,8 @@ import configPromise from '@payload-config'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
-// Project components to be implemented
-import { ProjectHero } from './components/ProjectHero'
+// Project components
+import { BannerHero } from './components/BannerHero'
 import { ProjectContent } from './components/ProjectContent'
 import { RelatedProjects } from './components/RelatedProjects'
 import type { Media } from '@/payload-types'
@@ -47,15 +47,15 @@ export default async function ProjectPage({ params: paramsPromise }: Args) {
   }
 
   return (
-    <article className="pb-16">
+    <article>
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
 
       {/* Live preview listener for draft mode */}
       {draft && <LivePreviewListener />}
 
-      {/* Project Hero Section */}
-      <ProjectHero project={project} />
+      {/* Enhanced Banner Hero Section - Full Screen */}
+      <BannerHero project={project} />
 
       {/* Project Content */}
       <ProjectContent project={project} />
@@ -85,8 +85,9 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   }
 
   const metaImageUrl = getImageUrl(project.meta?.image)
+  const heroMediaUrl = getImageUrl(project.heroMedia)
   const heroImageUrl = getImageUrl(project.heroImage)
-  const imageUrl = metaImageUrl || heroImageUrl
+  const imageUrl = metaImageUrl || heroMediaUrl || heroImageUrl
 
   return {
     title: project.meta?.title || `${project.title} | Projects`,

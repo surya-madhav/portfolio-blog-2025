@@ -12,7 +12,7 @@ import { TechnologyList } from '@/components/TechnologyBadge'
 // Define the project data type for card display
 export type CardProjectData = Pick<
   Project,
-  'slug' | 'title' | 'description' | 'projectStatus' | 'featured' | 'heroImage' | 'meta'
+  'slug' | 'title' | 'description' | 'projectStatus' | 'featured' | 'heroMedia' | 'heroImage' | 'meta'
 > & {
   technologies?: Technology[]
   categories?: ProjectCategory[]
@@ -38,11 +38,11 @@ export const ProjectCard: React.FC<{
 
   if (!doc) return null
 
-  const { slug, title, description, projectStatus, heroImage, technologies, categories, meta } = doc
+  const { slug, title, description, projectStatus, heroMedia, heroImage, technologies, categories, meta } = doc
   const { image: metaImage } = meta || {}
 
-  // Use hero image first, then meta image as fallback
-  const displayImage = heroImage || metaImage
+  // Use heroMedia first, then hero image, then meta image as fallback
+  const displayImage = heroMedia || heroImage || metaImage
 
   const href = `/projects/${slug}`
 
@@ -69,7 +69,9 @@ export const ProjectCard: React.FC<{
           <Media
             resource={displayImage}
             size="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full"
+            imgClassName="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+            videoClassName="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">

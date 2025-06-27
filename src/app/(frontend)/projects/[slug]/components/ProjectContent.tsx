@@ -27,7 +27,7 @@ export const ProjectContent: React.FC<ProjectContentProps> = ({ project }) => {
   }
 
   return (
-    <section className="py-16">
+    <section>
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <RenderBlocks blocks={layout} />

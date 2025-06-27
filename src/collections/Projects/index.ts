@@ -105,18 +105,29 @@ export const Projects: CollectionConfig<'projects'> = {
       },
     },
     {
+      name: 'heroMedia',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+      admin: {
+        description: 'Banner image or video for the project hero section. Supports both images and videos from the media collection.',
+      },
+    },
+    {
       name: 'heroImage',
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Main project image displayed in listings and project header',
+        description: 'Legacy field - use heroMedia instead. Main project image displayed in listings and project header',
+        condition: (data) => !data.heroMedia,
       },
     },
     {
       name: 'heroVideo',
       type: 'text',
       admin: {
-        description: 'YouTube video ID for project demo (overrides hero image)',
+        description: 'Legacy field - use heroMedia instead. YouTube video ID for project demo',
+        condition: (data) => !data.heroMedia,
       },
     },
     {
